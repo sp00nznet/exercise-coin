@@ -6,17 +6,28 @@ import {
   ScrollView,
   TouchableOpacity,
   Alert,
-  RefreshControl
+  RefreshControl,
+  Modal,
+  TextInput,
+  Linking
 } from 'react-native';
 import { useAuthStore } from '../stores/authStore';
 import api from '../services/api';
 
 export default function ProfileScreen() {
-  const { user, logout } = useAuthStore();
+  const { user, logout, updateUser } = useAuthStore();
   const [stats, setStats] = useState(null);
   const [leaderboard, setLeaderboard] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+
+  // Modal states
+  const [editProfileVisible, setEditProfileVisible] = useState(false);
+  const [changePasswordVisible, setChangePasswordVisible] = useState(false);
+  const [editUsername, setEditUsername] = useState('');
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
 
   const fetchData = useCallback(async () => {
     try {
@@ -51,6 +62,87 @@ export default function ProfileScreen() {
       [
         { text: 'Cancel', style: 'cancel' },
         { text: 'Logout', style: 'destructive', onPress: logout }
+      ]
+    );
+  };
+
+  const handleEditProfile = () => {
+    setEditUsername(user?.username || '');
+    setEditProfileVisible(true);
+  };
+
+  const handleSaveProfile = async () => {
+    if (!editUsername.trim()) {
+      Alert.alert('Error', 'Username cannot be empty');
+      return;
+    }
+
+    try {
+      const response = await api.updateProfile({ username: editUsername.trim() });
+      if (updateUser) {
+        updateUser({ username: editUsername.trim() });
+      }
+      setEditProfileVisible(false);
+      Alert.alert('Success', 'Profile updated successfully');
+    } catch (error) {
+      Alert.alert('Error', error.response?.data?.error || 'Failed to update profile');
+    }
+  };
+
+  const handleChangePassword = () => {
+    setCurrentPassword('');
+    setNewPassword('');
+    setConfirmPassword('');
+    setChangePasswordVisible(true);
+  };
+
+  const handleSavePassword = async () => {
+    if (!currentPassword || !newPassword || !confirmPassword) {
+      Alert.alert('Error', 'All fields are required');
+      return;
+    }
+
+    if (newPassword !== confirmPassword) {
+      Alert.alert('Error', 'New passwords do not match');
+      return;
+    }
+
+    if (newPassword.length < 6) {
+      Alert.alert('Error', 'Password must be at least 6 characters');
+      return;
+    }
+
+    try {
+      await api.changePassword(currentPassword, newPassword);
+      setChangePasswordVisible(false);
+      Alert.alert('Success', 'Password changed successfully');
+    } catch (error) {
+      Alert.alert('Error', error.response?.data?.error || 'Failed to change password');
+    }
+  };
+
+  const handleNotifications = () => {
+    Alert.alert(
+      'Notifications',
+      'Notification settings coming soon! This feature will allow you to customize alerts for mining rewards, exercise milestones, and more.',
+      [{ text: 'OK' }]
+    );
+  };
+
+  const handleHelpSupport = () => {
+    Alert.alert(
+      'Help & Support',
+      'How can we help you?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Visit FAQ',
+          onPress: () => Linking.openURL('https://github.com/sp00nznet/exercise-coin#readme')
+        },
+        {
+          text: 'Report Issue',
+          onPress: () => Linking.openURL('https://github.com/sp00nznet/exercise-coin/issues')
+        }
       ]
     );
   };
@@ -151,22 +243,22 @@ export default function ProfileScreen() {
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Account</Text>
 
-        <TouchableOpacity style={styles.menuItem}>
+        <TouchableOpacity style={styles.menuItem} onPress={handleEditProfile}>
           <Text style={styles.menuText}>Edit Profile</Text>
           <Text style={styles.menuArrow}>›</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.menuItem}>
+        <TouchableOpacity style={styles.menuItem} onPress={handleChangePassword}>
           <Text style={styles.menuText}>Change Password</Text>
           <Text style={styles.menuArrow}>›</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.menuItem}>
+        <TouchableOpacity style={styles.menuItem} onPress={handleNotifications}>
           <Text style={styles.menuText}>Notifications</Text>
           <Text style={styles.menuArrow}>›</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.menuItem}>
+        <TouchableOpacity style={styles.menuItem} onPress={handleHelpSupport}>
           <Text style={styles.menuText}>Help & Support</Text>
           <Text style={styles.menuArrow}>›</Text>
         </TouchableOpacity>
@@ -180,6 +272,94 @@ export default function ProfileScreen() {
       </View>
 
       <Text style={styles.version}>Exercise Coin v1.0.0</Text>
+
+      {/* Edit Profile Modal */}
+      <Modal
+        visible={editProfileVisible}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setEditProfileVisible(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>Edit Profile</Text>
+            <TextInput
+              style={styles.modalInput}
+              placeholder="Username"
+              placeholderTextColor="#666"
+              value={editUsername}
+              onChangeText={setEditUsername}
+              autoCapitalize="none"
+            />
+            <View style={styles.modalButtons}>
+              <TouchableOpacity
+                style={styles.modalButtonCancel}
+                onPress={() => setEditProfileVisible(false)}
+              >
+                <Text style={styles.modalButtonCancelText}>Cancel</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.modalButtonSave}
+                onPress={handleSaveProfile}
+              >
+                <Text style={styles.modalButtonSaveText}>Save</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+
+      {/* Change Password Modal */}
+      <Modal
+        visible={changePasswordVisible}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setChangePasswordVisible(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>Change Password</Text>
+            <TextInput
+              style={styles.modalInput}
+              placeholder="Current Password"
+              placeholderTextColor="#666"
+              secureTextEntry
+              value={currentPassword}
+              onChangeText={setCurrentPassword}
+            />
+            <TextInput
+              style={styles.modalInput}
+              placeholder="New Password"
+              placeholderTextColor="#666"
+              secureTextEntry
+              value={newPassword}
+              onChangeText={setNewPassword}
+            />
+            <TextInput
+              style={styles.modalInput}
+              placeholder="Confirm New Password"
+              placeholderTextColor="#666"
+              secureTextEntry
+              value={confirmPassword}
+              onChangeText={setConfirmPassword}
+            />
+            <View style={styles.modalButtons}>
+              <TouchableOpacity
+                style={styles.modalButtonCancel}
+                onPress={() => setChangePasswordVisible(false)}
+              >
+                <Text style={styles.modalButtonCancelText}>Cancel</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.modalButtonSave}
+                onPress={handleSavePassword}
+              >
+                <Text style={styles.modalButtonSaveText}>Save</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </ScrollView>
   );
 }
@@ -335,5 +515,65 @@ const styles = StyleSheet.create({
     fontSize: 12,
     textAlign: 'center',
     paddingBottom: 30
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20
+  },
+  modalContent: {
+    backgroundColor: '#1a1a2e',
+    borderRadius: 16,
+    padding: 24,
+    width: '100%',
+    maxWidth: 400
+  },
+  modalTitle: {
+    color: '#fff',
+    fontSize: 20,
+    fontWeight: '600',
+    marginBottom: 20,
+    textAlign: 'center'
+  },
+  modalInput: {
+    backgroundColor: '#0f0f23',
+    borderRadius: 12,
+    padding: 16,
+    color: '#fff',
+    fontSize: 16,
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: '#333'
+  },
+  modalButtons: {
+    flexDirection: 'row',
+    marginTop: 12,
+    gap: 12
+  },
+  modalButtonCancel: {
+    flex: 1,
+    backgroundColor: '#333',
+    borderRadius: 12,
+    padding: 14,
+    alignItems: 'center'
+  },
+  modalButtonCancelText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '500'
+  },
+  modalButtonSave: {
+    flex: 1,
+    backgroundColor: '#e94560',
+    borderRadius: 12,
+    padding: 14,
+    alignItems: 'center'
+  },
+  modalButtonSaveText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '600'
   }
 });

@@ -9,8 +9,10 @@ const authRoutes = require('./routes/auth');
 const exerciseRoutes = require('./routes/exercise');
 const walletRoutes = require('./routes/wallet');
 const userRoutes = require('./routes/user');
+const achievementRoutes = require('./routes/achievements');
 const { errorHandler } = require('./middleware/errorHandler');
 const logger = require('./utils/logger');
+const { AchievementService } = require('./services');
 
 const app = express();
 
@@ -32,6 +34,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/exercise', exerciseRoutes);
 app.use('/api/wallet', walletRoutes);
 app.use('/api/user', userRoutes);
+app.use('/api/achievements', achievementRoutes);
 
 // Health check
 app.get('/health', (req, res) => {
@@ -46,8 +49,12 @@ const PORT = process.env.PORT || 3000;
 const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/exercise-coin';
 
 mongoose.connect(MONGODB_URI)
-  .then(() => {
+  .then(async () => {
     logger.info('Connected to MongoDB');
+
+    // Initialize achievements in database
+    await AchievementService.initializeAchievements();
+
     app.listen(PORT, () => {
       logger.info(`Exercise Coin server running on port ${PORT}`);
     });

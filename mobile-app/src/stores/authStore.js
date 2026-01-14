@@ -87,10 +87,14 @@ export const useAuthStore = create((set, get) => ({
     set({ token: null, user: null });
   },
 
-  updateUser: (userData) => {
-    set((state) => ({
-      user: { ...state.user, ...userData }
-    }));
+  updateUser: async (userData) => {
+    const updatedUser = { ...get().user, ...userData };
+    set({ user: updatedUser });
+    try {
+      await SecureStore.setItemAsync(USER_KEY, JSON.stringify(updatedUser));
+    } catch (error) {
+      console.error('Failed to persist user update:', error);
+    }
   }
 }));
 

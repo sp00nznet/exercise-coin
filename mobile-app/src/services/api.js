@@ -133,6 +133,22 @@ const api = {
       params: { period, limit }
     });
     return response.data;
+  },
+
+  // Achievements
+  getAchievements: async () => {
+    const response = await client.get('/achievements');
+    return response.data;
+  },
+
+  checkAchievements: async () => {
+    const response = await client.post('/achievements/check');
+    return response.data;
+  },
+
+  getNewAchievements: async () => {
+    const response = await client.get('/achievements/new');
+    return response.data;
   }
 };
 

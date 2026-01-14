@@ -13,6 +13,7 @@ export function useStepCounter() {
   const previousStepsRef = useRef(0);
   const intervalRef = useRef(null);
   const stepDataBufferRef = useRef([]);
+  const currentStepsRef = useRef(0);
 
   // Check if pedometer is available
   useEffect(() => {
@@ -43,15 +44,17 @@ export function useStepCounter() {
       setStepsPerSecond(0);
       previousStepsRef.current = 0;
       stepDataBufferRef.current = [];
+      currentStepsRef.current = 0;
 
       // Subscribe to step updates
       subscriptionRef.current = Pedometer.watchStepCount((result) => {
         setCurrentSteps(result.steps);
+        currentStepsRef.current = result.steps;
       });
 
       // Calculate steps per second every second
       intervalRef.current = setInterval(() => {
-        const currentTotal = currentSteps;
+        const currentTotal = currentStepsRef.current;
         const stepsDiff = currentTotal - previousStepsRef.current;
         previousStepsRef.current = currentTotal;
 
@@ -73,7 +76,7 @@ export function useStepCounter() {
       setError('Failed to start step tracking');
       return { success: false, error: err.message };
     }
-  }, [isAvailable, currentSteps]);
+  }, [isAvailable]);
 
   const stopTracking = useCallback(() => {
     if (subscriptionRef.current) {
