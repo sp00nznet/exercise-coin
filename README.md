@@ -1,150 +1,198 @@
-# Exercise Coin
+<p align="center">
+  <img src="docs/assets/logo-placeholder.png" alt="Exercise Coin" width="120" />
+</p>
 
-Get rewarded with cryptocurrency for exercising. Track your steps, earn Exercise Coin.
+<h1 align="center">Exercise Coin</h1>
+
+<p align="center">
+  <strong>Get Fit. Get Paid.</strong><br>
+  Earn cryptocurrency rewards for your physical activity.
+</p>
+
+<p align="center">
+  <a href="#features">Features</a> •
+  <a href="#quick-start">Quick Start</a> •
+  <a href="#documentation">Docs</a> •
+  <a href="#how-it-works">How It Works</a> •
+  <a href="#contributing">Contributing</a>
+</p>
+
+<p align="center">
+  <img src="https://img.shields.io/badge/platform-iOS%20%7C%20Android-blue" alt="Platform" />
+  <img src="https://img.shields.io/badge/node-%3E%3D18.0.0-brightgreen" alt="Node Version" />
+  <img src="https://img.shields.io/badge/license-MIT-green" alt="License" />
+  <img src="https://img.shields.io/badge/PRs-welcome-brightgreen" alt="PRs Welcome" />
+</p>
+
+---
 
 ## Overview
 
-Exercise Coin is a multipart fitness application that rewards users with cryptocurrency for physical activity. The system tracks exercise through a mobile app, validates the activity through a middleware server, and triggers cryptocurrency mining based on verified exercise.
-
-### How It Works
+Exercise Coin transforms your daily physical activity into cryptocurrency rewards. Using your smartphone's pedometer, we track your exercise sessions, validate they're legitimate, and reward you with EXC coins mined on your personal blockchain node.
 
 ```
-Walking → Mobile App → Server Validation → Coin Mining → Reward Payout
-```
-
-1. **Track**: Mobile app monitors your steps and exercise activity
-2. **Validate**: Server analyzes exercise patterns to ensure legitimate activity (60+ seconds sustained exercise)
-3. **Mine**: Valid exercise triggers your personal coin daemon to mine for a duration proportional to exercise time
-4. **Earn**: Any coins mined during your exercise window are credited to your wallet
-
-## Architecture
-
-```
-├── mobile-app/          # React Native iOS/Android app
-│   ├── src/
-│   │   ├── screens/     # App screens (Home, Exercise, Wallet, Profile)
-│   │   ├── hooks/       # Step counter and custom hooks
-│   │   ├── stores/      # Zustand state management
-│   │   └── services/    # API client
-│
-├── server/              # Node.js Express middleware
-│   ├── src/
-│   │   ├── controllers/ # Request handlers
-│   │   ├── models/      # MongoDB schemas (User, ExerciseSession, Transaction)
-│   │   ├── services/    # Business logic (ExerciseDetection, CoinDaemon)
-│   │   ├── routes/      # API endpoints
-│   │   └── middleware/  # Auth, validation, error handling
-│
-└── coin-daemon/         # F7CoinV4 fork configuration
-    ├── config/          # Daemon configuration templates
-    └── scripts/         # Daemon management scripts
+┌─────────────┐     ┌─────────────┐     ┌─────────────┐     ┌─────────────┐
+│   Mobile    │────▶│   Server    │────▶│    Coin     │────▶│   Wallet    │
+│     App     │     │  Validates  │     │   Daemon    │     │   Payout    │
+│ Track Steps │     │  Exercise   │     │   Mining    │     │             │
+└─────────────┘     └─────────────┘     └─────────────┘     └─────────────┘
 ```
 
 ## Features
 
+<table>
+<tr>
+<td width="50%">
+
 ### Mobile App
-- Step tracking with pedometer sensors
-- Real-time exercise session monitoring
-- Wallet balance and transaction history
-- User leaderboards
-- Progress statistics
+- Real-time step tracking
+- Exercise session monitoring
+- Wallet & transaction history
+- Leaderboards & achievements
+- iOS & Android support
 
-### Server
-- User authentication (JWT)
-- Exercise session management
-- Anti-cheat detection (prevents paint mixer attacks)
-- Per-user daemon management
-- Transaction logging
-- Rate limiting and security
+</td>
+<td width="50%">
 
-### Anti-Cheat System
-- Detects unnatural step patterns
-- Validates step rate variance (catches mechanical devices)
-- Identifies periodic patterns
-- Checks for impossible acceleration
-- Requires minimum sustained exercise duration
+### Backend
+- JWT authentication
+- Anti-cheat detection
+- Per-user mining daemons
+- MongoDB persistence
+- Rate limiting & security
 
-## Getting Started
+</td>
+</tr>
+</table>
 
-### Prerequisites
-- Node.js 18+
-- MongoDB 7+
-- F7CoinV4 daemon (build from source)
+### Anti-Cheat Protection
 
-### Quick Start with Docker
+Our system detects and prevents:
+- Mechanical devices (paint mixers, shakers)
+- Periodic/robotic patterns
+- Impossible acceleration spikes
+- Superhuman step rates
+
+## How It Works
+
+| Step | Action | Description |
+|:----:|--------|-------------|
+| 1 | **Track** | Mobile app monitors your steps via device sensors |
+| 2 | **Validate** | Server analyzes patterns for 60+ seconds of sustained activity |
+| 3 | **Mine** | Your personal daemon mines for time proportional to exercise |
+| 4 | **Earn** | Mined coins are credited to your wallet |
+
+## Quick Start
+
+### Using Docker (Recommended)
 
 ```bash
 # Clone the repository
 git clone https://github.com/sp00nznet/exercise-coin.git
 cd exercise-coin
 
-# Start services
+# Start all services
 docker-compose up -d
 
 # View logs
 docker-compose logs -f server
 ```
 
-### Manual Setup
+### Manual Installation
 
-#### Server
+<details>
+<summary><strong>Server Setup</strong></summary>
+
 ```bash
 cd server
 cp .env.example .env
-# Edit .env with your configuration
+# Configure your environment variables
 npm install
 npm run dev
 ```
 
-#### Mobile App
+</details>
+
+<details>
+<summary><strong>Mobile App Setup</strong></summary>
+
 ```bash
 cd mobile-app
 npm install
 npm start
-# Scan QR code with Expo Go app
+# Scan QR code with Expo Go
 ```
 
-#### Coin Daemon
+</details>
+
+<details>
+<summary><strong>Coin Daemon Setup</strong></summary>
+
 ```bash
-# 1. Build F7CoinV4 fork
+# Build from F7CoinV4 source
 git clone https://github.com/sp00nznet/F7CoinV4.git
 cd F7CoinV4
-# Follow build instructions
 
-# 2. Generate new genesis block for Exercise Coin
+# Generate unique genesis block
 cd ../coin-daemon/scripts
 ./generate-genesis.sh
 
-# 3. Update source with new genesis and rebuild
+# Follow instructions in coin-daemon/config/network-params.md
 ```
 
-## API Endpoints
+</details>
 
-### Authentication
-- `POST /api/auth/register` - Create account
-- `POST /api/auth/login` - Login
-- `GET /api/auth/profile` - Get profile
+## Network Parameters
 
-### Exercise
-- `POST /api/exercise/session/start` - Start exercise session
-- `POST /api/exercise/session/steps` - Record step data
-- `POST /api/exercise/session/end` - End session and trigger mining
-- `GET /api/exercise/sessions` - Get session history
-- `GET /api/exercise/stats` - Get exercise statistics
+Exercise Coin uses unique network parameters to ensure complete isolation from other cryptocurrencies.
 
-### Wallet
-- `GET /api/wallet/balance` - Get coin balance
-- `GET /api/wallet/address` - Get wallet address
-- `GET /api/wallet/transactions` - Get transaction history
-- `GET /api/wallet/daemon/status` - Get daemon status
+| Parameter | Mainnet | Testnet |
+|-----------|:-------:|:-------:|
+| P2P Port | `39339` | `39340` |
+| RPC Port | `39338` | `39341` |
+| Address Prefix | `E` | `m` |
+| Bech32 Prefix | `exc` | `texc` |
 
-### User
-- `GET /api/user/dashboard` - Get dashboard data
-- `GET /api/user/leaderboard` - Get top earners
+> **Important**: See [Network Parameters Guide](docs/coin-daemon.md#network-parameters) for complete source code modifications.
+
+## Project Structure
+
+```
+exercise-coin/
+├── mobile-app/          # React Native (Expo) application
+│   └── src/
+│       ├── screens/     # App screens
+│       ├── hooks/       # Custom React hooks
+│       ├── stores/      # Zustand state management
+│       └── services/    # API client
+│
+├── server/              # Node.js Express backend
+│   └── src/
+│       ├── controllers/ # Route handlers
+│       ├── models/      # MongoDB schemas
+│       ├── services/    # Business logic
+│       ├── routes/      # API routes
+│       └── middleware/  # Auth, validation
+│
+├── coin-daemon/         # Cryptocurrency daemon
+│   ├── config/          # Configuration files
+│   └── scripts/         # Management scripts
+│
+└── docs/                # Documentation
+```
+
+## Documentation
+
+| Document | Description |
+|----------|-------------|
+| [Getting Started](docs/getting-started.md) | Complete setup guide |
+| [API Reference](docs/api-reference.md) | Full API documentation |
+| [Architecture](docs/architecture.md) | System design overview |
+| [Mobile App](docs/mobile-app.md) | Mobile development guide |
+| [Coin Daemon](docs/coin-daemon.md) | Blockchain setup & config |
+| [Deployment](docs/deployment.md) | Production deployment |
 
 ## Configuration
-
-### Environment Variables
 
 ```env
 # Server
@@ -152,7 +200,7 @@ PORT=3000
 MONGODB_URI=mongodb://localhost:27017/exercise-coin
 JWT_SECRET=your-secret-key
 
-# Coin Daemon (Exercise Coin unique ports)
+# Coin Daemon
 COIN_DAEMON_HOST=localhost
 COIN_DAEMON_PORT=39338
 
@@ -161,27 +209,40 @@ MIN_EXERCISE_DURATION_SECONDS=60
 MINING_SECONDS_PER_EXERCISE_SECOND=0.5
 ```
 
-## Network Parameters
+## Exercise Requirements
 
-Exercise Coin uses **unique network parameters** to avoid conflicts with F7CoinV4 and other altcoins.
+To earn rewards, your exercise must meet these criteria:
 
-| Parameter       | Mainnet | Testnet |
-|-----------------|---------|---------|
-| P2P Port        | 39339   | 39340   |
-| RPC Port        | 39338   | 39341   |
-| Address Prefix  | 33 (E)  | 111 (m) |
-| Bech32 Prefix   | exc     | texc    |
+| Requirement | Value |
+|-------------|-------|
+| Minimum Duration | 60 consecutive seconds |
+| Step Rate | 1-5 steps per second |
+| Pattern Variance | Natural human variance required |
+| Suspicious Patterns | None detected |
 
-**Important**: When building the coin daemon from F7CoinV4 source, you MUST update these parameters and generate a new genesis block. See `coin-daemon/config/network-params.md` for detailed instructions.
+## Tech Stack
 
-## Exercise Validation Rules
+- **Mobile**: React Native, Expo, Zustand
+- **Backend**: Node.js, Express, MongoDB
+- **Blockchain**: F7CoinV4 fork
+- **Infrastructure**: Docker, Docker Compose
 
-To qualify for mining rewards:
-1. Exercise for at least 60 consecutive seconds
-2. Maintain a walking/running pace (1-5 steps per second)
-3. Show natural variance in step rate
-4. No suspicious patterns detected
+## Contributing
+
+We welcome contributions! Please see our [Contributing Guide](docs/contributing.md) for details.
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
 
 ## License
 
-MIT
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+---
+
+<p align="center">
+  <sub>Built with sweat and code</sub>
+</p>
