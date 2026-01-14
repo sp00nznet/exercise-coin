@@ -1,0 +1,75 @@
+.sessions-page {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.sessions-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.sessions-filters {
+  display: flex;
+  gap: 10px;
+}
+
+.filter-select {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 15px;
+  color: var(--text-primary);
+  font-size: 14px;
+  outline: none;
+  cursor: pointer;
+}
+
+.refresh-btn {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 20px;
+  color: var(--text-primary);
+  font-size: 14px;
+}
+
+.refresh-btn:hover {
+  background: var(--bg-tertiary);
+}
+
+.coins {
+  color: var(--success);
+  font-weight: 600;
+}
+
+.invalid-reason {
+  color: var(--text-muted);
+  font-size: 12px;
+  cursor: help;
+}
+
+.sessions-legend {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 20px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.loading {
+  text-align: center;
+  padding: 40px;
+  color: var(--text-secondary);
+}

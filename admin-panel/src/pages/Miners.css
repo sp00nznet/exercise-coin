@@ -1,0 +1,111 @@
+.miners-page {
+  display: flex;
+  flex-direction: column;
+  gap: 25px;
+}
+
+.miners-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.miners-header h2 {
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.refresh-note {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 20px;
+}
+
+.mining-indicator {
+  color: var(--text-muted);
+}
+
+.mining-indicator.active {
+  color: var(--success);
+  font-weight: 600;
+}
+
+.active-mining-section {
+  background: var(--bg-secondary);
+  border: 1px solid var(--success);
+  border-radius: 12px;
+  padding: 20px;
+}
+
+.active-mining-section h3 {
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 15px;
+  color: var(--success);
+}
+
+.mining-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 15px;
+}
+
+.mining-card {
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 15px;
+}
+
+.mining-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.mining-card-header .username {
+  font-weight: 600;
+  font-size: 15px;
+}
+
+.mining-badge {
+  background: rgba(74, 222, 128, 0.1);
+  color: var(--success);
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.mining-card-details {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.mining-card-details .detail {
+  display: flex;
+  justify-content: space-between;
+}
+
+.mining-card-details .label {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.mining-card-details .value {
+  font-size: 13px;
+  color: var(--text-primary);
+}
+
+.loading {
+  text-align: center;
+  padding: 40px;
+  color: var(--text-secondary);
+}

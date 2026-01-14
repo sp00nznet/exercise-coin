@@ -1,0 +1,193 @@
+.system-health {
+  display: flex;
+  flex-direction: column;
+  gap: 25px;
+}
+
+.health-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.health-header h2 {
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.status-indicator {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.status-indicator.healthy {
+  background: rgba(74, 222, 128, 0.1);
+  color: var(--success);
+}
+
+.status-indicator.unhealthy {
+  background: rgba(239, 68, 68, 0.1);
+  color: var(--error);
+}
+
+.status-indicator .dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: currentColor;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 20px;
+}
+
+.services-section,
+.memory-section,
+.info-section,
+.logs-info {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 20px;
+}
+
+.services-section h3,
+.memory-section h3,
+.info-section h3,
+.logs-info h3 {
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 15px;
+}
+
+.services-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 15px;
+}
+
+.service-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 15px;
+  background: var(--bg-tertiary);
+  border-radius: 10px;
+  border: 1px solid var(--border);
+}
+
+.service-card.ok {
+  border-color: var(--success);
+}
+
+.service-card.error {
+  border-color: var(--error);
+}
+
+.service-icon {
+  font-size: 24px;
+}
+
+.service-name {
+  flex: 1;
+  font-weight: 500;
+}
+
+.service-status {
+  font-size: 12px;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 12px;
+  text-transform: capitalize;
+}
+
+.service-status.connected,
+.service-status.running {
+  background: rgba(74, 222, 128, 0.1);
+  color: var(--success);
+}
+
+.service-status.disconnected,
+.service-status.error {
+  background: rgba(239, 68, 68, 0.1);
+  color: var(--error);
+}
+
+.memory-details,
+.info-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.memory-item,
+.info-item {
+  display: flex;
+  justify-content: space-between;
+  padding: 10px 15px;
+  background: var(--bg-tertiary);
+  border-radius: 8px;
+}
+
+.memory-item .label,
+.info-item .label {
+  color: var(--text-secondary);
+  font-size: 14px;
+}
+
+.memory-item .value,
+.info-item .value {
+  font-weight: 500;
+}
+
+.logs-info p {
+  color: var(--text-secondary);
+  font-size: 14px;
+  margin-bottom: 10px;
+}
+
+.logs-info .note {
+  margin-top: 15px;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.code-block {
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 15px;
+  overflow-x: auto;
+}
+
+.code-block code {
+  font-family: 'Monaco', 'Menlo', monospace;
+  font-size: 13px;
+  color: var(--accent);
+}
+
+.logs-info .note code {
+  background: var(--bg-tertiary);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 12px;
+}
+
+.loading {
+  text-align: center;
+  padding: 40px;
+  color: var(--text-secondary);
+}

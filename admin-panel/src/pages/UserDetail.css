@@ -1,0 +1,126 @@
+.user-detail {
+  display: flex;
+  flex-direction: column;
+  gap: 25px;
+}
+
+.back-btn {
+  background: none;
+  border: none;
+  color: var(--accent);
+  font-size: 14px;
+  padding: 0;
+  align-self: flex-start;
+}
+
+.back-btn:hover {
+  text-decoration: underline;
+}
+
+.user-header {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 25px;
+}
+
+.user-avatar {
+  width: 70px;
+  height: 70px;
+  border-radius: 50%;
+  background: var(--accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28px;
+  font-weight: 700;
+  color: white;
+}
+
+.user-info h2 {
+  font-size: 22px;
+  margin-bottom: 5px;
+}
+
+.user-info p {
+  color: var(--text-secondary);
+  margin-bottom: 10px;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 15px;
+}
+
+.detail-section {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 20px;
+}
+
+.detail-section h3 {
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 15px;
+}
+
+.details-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 15px;
+}
+
+.detail-item {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.detail-item .label {
+  font-size: 12px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+}
+
+.detail-item .value {
+  font-size: 14px;
+  color: var(--text-primary);
+}
+
+.detail-item .value.mono {
+  font-family: monospace;
+  font-size: 12px;
+  word-break: break-all;
+}
+
+.session-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15px;
+}
+
+.session-stat {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.session-stat .count {
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+
+.loading, .error {
+  text-align: center;
+  padding: 40px;
+  color: var(--text-secondary);
+}
+
+.error {
+  color: var(--error);
+}

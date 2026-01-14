@@ -9,6 +9,7 @@ const authRoutes = require('./routes/auth');
 const exerciseRoutes = require('./routes/exercise');
 const walletRoutes = require('./routes/wallet');
 const userRoutes = require('./routes/user');
+const adminRoutes = require('./routes/admin');
 const { errorHandler } = require('./middleware/errorHandler');
 const logger = require('./utils/logger');
 
@@ -32,6 +33,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/exercise', exerciseRoutes);
 app.use('/api/wallet', walletRoutes);
 app.use('/api/user', userRoutes);
+app.use('/api/admin', adminRoutes);
 
 // Health check
 app.get('/health', (req, res) => {

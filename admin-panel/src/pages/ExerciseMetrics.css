@@ -1,0 +1,145 @@
+.exercise-metrics {
+  display: flex;
+  flex-direction: column;
+  gap: 25px;
+}
+
+.metrics-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.metrics-header h2 {
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.period-selector {
+  display: flex;
+  gap: 5px;
+  background: var(--bg-secondary);
+  padding: 5px;
+  border-radius: 8px;
+}
+
+.period-selector button {
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.period-selector button:hover {
+  background: var(--bg-tertiary);
+}
+
+.period-selector button.active {
+  background: var(--accent);
+  color: white;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 20px;
+}
+
+.charts-row {
+  display: flex;
+  gap: 20px;
+}
+
+.charts-row .flex-2 {
+  flex: 2;
+}
+
+.charts-row .flex-1 {
+  flex: 1;
+  min-width: 300px;
+}
+
+@media (max-width: 900px) {
+  .charts-row {
+    flex-direction: column;
+  }
+
+  .charts-row .flex-1 {
+    min-width: auto;
+  }
+}
+
+.chart-section {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 20px;
+}
+
+.chart-section h3 {
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 20px;
+}
+
+.chart-container {
+  margin: 0 -10px;
+}
+
+.pie-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.invalid-reasons-section {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 20px;
+}
+
+.invalid-reasons-section h3 {
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 15px;
+}
+
+.reasons-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.reason-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 15px;
+  background: var(--bg-tertiary);
+  border-radius: 8px;
+}
+
+.reason-text {
+  font-size: 13px;
+  color: var(--text-secondary);
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.reason-count {
+  font-weight: 600;
+  color: var(--error);
+  margin-left: 15px;
+}
+
+.loading {
+  text-align: center;
+  padding: 40px;
+  color: var(--text-secondary);
+}
