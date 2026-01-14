@@ -10,9 +10,11 @@ const exerciseRoutes = require('./routes/exercise');
 const walletRoutes = require('./routes/wallet');
 const userRoutes = require('./routes/user');
 const achievementRoutes = require('./routes/achievements');
+const treasureRoutes = require('./routes/treasure');
+const transferRoutes = require('./routes/transfer');
 const { errorHandler } = require('./middleware/errorHandler');
 const logger = require('./utils/logger');
-const { AchievementService } = require('./services');
+const { AchievementService, RandomDropDaemon, TreasureService, TransferService } = require('./services');
 
 const app = express();
 
@@ -35,6 +37,8 @@ app.use('/api/exercise', exerciseRoutes);
 app.use('/api/wallet', walletRoutes);
 app.use('/api/user', userRoutes);
 app.use('/api/achievements', achievementRoutes);
+app.use('/api/treasure', treasureRoutes);
+app.use('/api/transfer', transferRoutes);
 
 // Health check
 app.get('/health', (req, res) => {
@@ -54,6 +58,15 @@ mongoose.connect(MONGODB_URI)
 
     // Initialize achievements in database
     await AchievementService.initializeAchievements();
+
+    // Initialize random drop daemon (runs weekly)
+    RandomDropDaemon.initialize();
+
+    // Run cleanup tasks periodically (every hour)
+    setInterval(async () => {
+      await TreasureService.cleanupExpiredDrops();
+      await TransferService.cleanupExpiredTransfers();
+    }, 60 * 60 * 1000);
 
     app.listen(PORT, () => {
       logger.info(`Exercise Coin server running on port ${PORT}`);

@@ -149,6 +149,78 @@ const api = {
   getNewAchievements: async () => {
     const response = await client.get('/achievements/new');
     return response.data;
+  },
+
+  // Treasure / Geo-drops
+  dropTreasure: async (latitude, longitude, amount, message = '', locationName = '') => {
+    const response = await client.post('/treasure/drop', {
+      latitude,
+      longitude,
+      amount,
+      message,
+      locationName
+    });
+    return response.data;
+  },
+
+  findNearbyTreasure: async (latitude, longitude, radius = 5000) => {
+    const response = await client.get('/treasure/nearby', {
+      params: { latitude, longitude, radius }
+    });
+    return response.data;
+  },
+
+  collectTreasure: async (dropId, latitude, longitude) => {
+    const response = await client.post('/treasure/collect', {
+      dropId,
+      latitude,
+      longitude
+    });
+    return response.data;
+  },
+
+  getTreasureHistory: async (limit = 20) => {
+    const response = await client.get('/treasure/history', { params: { limit } });
+    return response.data;
+  },
+
+  // Transfers
+  sendCoins: async (username, amount, message = '') => {
+    const response = await client.post('/transfer/send', {
+      username,
+      amount,
+      message
+    });
+    return response.data;
+  },
+
+  createQRTransfer: async (amount, message = '', expiresInHours = 24) => {
+    const response = await client.post('/transfer/qr/create', {
+      amount,
+      message,
+      expiresInHours
+    });
+    return response.data;
+  },
+
+  claimQRTransfer: async (claimCode) => {
+    const response = await client.post('/transfer/qr/claim', { claimCode });
+    return response.data;
+  },
+
+  cancelQRTransfer: async (transferId) => {
+    const response = await client.delete(`/transfer/qr/${transferId}`);
+    return response.data;
+  },
+
+  getPendingTransfers: async () => {
+    const response = await client.get('/transfer/pending');
+    return response.data;
+  },
+
+  getTransferHistory: async (limit = 20) => {
+    const response = await client.get('/transfer/history', { params: { limit } });
+    return response.data;
   }
 };
 

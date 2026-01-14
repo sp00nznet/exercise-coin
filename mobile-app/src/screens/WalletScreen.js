@@ -9,9 +9,11 @@ import {
   Share,
   Alert
 } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
 import api from '../services/api';
 
 export default function WalletScreen() {
+  const navigation = useNavigation();
   const [balance, setBalance] = useState(null);
   const [transactions, setTransactions] = useState([]);
   const [daemonStatus, setDaemonStatus] = useState(null);
@@ -100,6 +102,23 @@ export default function WalletScreen() {
             +{balance.pending.toFixed(4)} pending
           </Text>
         )}
+      </View>
+
+      <View style={styles.actionButtons}>
+        <TouchableOpacity
+          style={styles.actionButton}
+          onPress={() => navigation.navigate('SendCoins')}
+        >
+          <Text style={styles.actionButtonIcon}>📤</Text>
+          <Text style={styles.actionButtonText}>Send & Receive</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.actionButton}
+          onPress={() => navigation.navigate('Achievements')}
+        >
+          <Text style={styles.actionButtonIcon}>🏆</Text>
+          <Text style={styles.actionButtonText}>Achievements</Text>
+        </TouchableOpacity>
       </View>
 
       <View style={styles.addressCard}>
@@ -216,6 +235,30 @@ const styles = StyleSheet.create({
     color: '#f59e0b',
     fontSize: 14,
     marginTop: 8
+  },
+  actionButtons: {
+    flexDirection: 'row',
+    marginHorizontal: 20,
+    marginBottom: 12,
+    gap: 12
+  },
+  actionButton: {
+    flex: 1,
+    backgroundColor: '#1a1a2e',
+    borderRadius: 12,
+    padding: 16,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#333'
+  },
+  actionButtonIcon: {
+    fontSize: 24,
+    marginBottom: 8
+  },
+  actionButtonText: {
+    color: '#fff',
+    fontSize: 13,
+    fontWeight: '500'
   },
   addressCard: {
     backgroundColor: '#1a1a2e',
