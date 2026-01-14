@@ -2,6 +2,11 @@
 
 # Start Exercise Coin daemon for a specific user
 # Usage: ./start-daemon.sh <user_id> <rpc_port>
+#
+# Exercise Coin Network Parameters (UNIQUE - do not change):
+# Mainnet: RPC=39338, P2P=39339
+# Testnet: RPC=39341, P2P=39340
+# Address Prefix: 33 (E...), Bech32: exc1...
 
 set -e
 
@@ -37,9 +42,10 @@ fi
 # Generate random RPC password for this user
 RPC_PASSWORD=$(openssl rand -hex 32)
 
-# Create configuration file
+# Create configuration file with Exercise Coin unique network settings
 cat > "$CONF_FILE" << EOF
 # Exercise Coin Configuration for User: $USER_ID
+# UNIQUE network parameters - do not use F7CoinV4 defaults
 rpcuser=user_$USER_ID
 rpcpassword=$RPC_PASSWORD
 rpcport=$RPC_PORT

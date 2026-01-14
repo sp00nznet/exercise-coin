@@ -7,7 +7,8 @@ const execAsync = promisify(exec);
 
 class CoinDaemonService {
   constructor() {
-    this.basePort = parseInt(process.env.COIN_DAEMON_PORT) || 19332;
+    // Exercise Coin unique ports: Mainnet RPC=39338, P2P=39339
+    this.basePort = parseInt(process.env.COIN_DAEMON_PORT) || 39338;
     this.daemonHost = process.env.COIN_DAEMON_HOST || 'localhost';
     this.rpcUser = process.env.COIN_DAEMON_USER || 'exercisecoin';
     this.rpcPass = process.env.COIN_DAEMON_PASS || 'password';
@@ -84,11 +85,12 @@ class CoinDaemonService {
   async generateWalletAddress(userId, port) {
     // In production, this would call the actual coin daemon RPC
     // For now, generate a deterministic address based on userId
+    // Exercise Coin addresses start with 'E' (base58 prefix 33)
     const crypto = require('crypto');
     const hash = crypto.createHash('sha256')
       .update(`exercise-coin-${userId}-${Date.now()}`)
       .digest('hex');
-    return `EXC${hash.substring(0, 34)}`;
+    return `E${hash.substring(0, 33)}`;
   }
 
   async startMining(userId, durationSeconds) {

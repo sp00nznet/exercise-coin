@@ -152,14 +152,27 @@ PORT=3000
 MONGODB_URI=mongodb://localhost:27017/exercise-coin
 JWT_SECRET=your-secret-key
 
-# Coin Daemon
+# Coin Daemon (Exercise Coin unique ports)
 COIN_DAEMON_HOST=localhost
-COIN_DAEMON_PORT=19332
+COIN_DAEMON_PORT=39338
 
 # Exercise Detection
 MIN_EXERCISE_DURATION_SECONDS=60
 MINING_SECONDS_PER_EXERCISE_SECOND=0.5
 ```
+
+## Network Parameters
+
+Exercise Coin uses **unique network parameters** to avoid conflicts with F7CoinV4 and other altcoins.
+
+| Parameter       | Mainnet | Testnet |
+|-----------------|---------|---------|
+| P2P Port        | 39339   | 39340   |
+| RPC Port        | 39338   | 39341   |
+| Address Prefix  | 33 (E)  | 111 (m) |
+| Bech32 Prefix   | exc     | texc    |
+
+**Important**: When building the coin daemon from F7CoinV4 source, you MUST update these parameters and generate a new genesis block. See `coin-daemon/config/network-params.md` for detailed instructions.
 
 ## Exercise Validation Rules
 

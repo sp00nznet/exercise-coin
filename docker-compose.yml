@@ -33,7 +33,8 @@ services:
       JWT_SECRET: ${JWT_SECRET:-change-this-in-production}
       JWT_EXPIRES_IN: 7d
       COIN_DAEMON_HOST: daemon
-      COIN_DAEMON_PORT: 19332
+      # Exercise Coin unique RPC port (mainnet)
+      COIN_DAEMON_PORT: 39338
     ports:
       - "3000:3000"
     volumes:
@@ -42,6 +43,7 @@ services:
       - exercisecoin-network
 
   # Base Coin Daemon (seed node)
+  # Exercise Coin unique ports: RPC=39338, P2P=39339
   daemon:
     build:
       context: ./coin-daemon
@@ -51,8 +53,8 @@ services:
     volumes:
       - daemon_data:/var/lib/exercisecoin
     ports:
-      - "19332:19332"
-      - "19333:19333"
+      - "39338:39338"  # RPC port (unique to Exercise Coin)
+      - "39339:39339"  # P2P port (unique to Exercise Coin)
     networks:
       - exercisecoin-network
 
