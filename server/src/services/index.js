@@ -4,6 +4,7 @@ const AchievementService = require('./AchievementService');
 const TreasureService = require('./TreasureService');
 const TransferService = require('./TransferService');
 const RandomDropDaemon = require('./RandomDropDaemon');
+const FriendlinessDaemon = require('./FriendlinessDaemon');
 
 module.exports = {
   ExerciseDetectionService,
@@ -11,5 +12,6 @@ module.exports = {
   AchievementService,
   TreasureService,
   TransferService,
-  RandomDropDaemon
+  RandomDropDaemon,
+  FriendlinessDaemon
 };

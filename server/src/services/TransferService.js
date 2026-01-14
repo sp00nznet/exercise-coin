@@ -1,13 +1,67 @@
 const CoinTransfer = require('../models/CoinTransfer');
 const User = require('../models/User');
 const Transaction = require('../models/Transaction');
+const ExerciseSession = require('../models/ExerciseSession');
+const FriendlinessDaemon = require('./FriendlinessDaemon');
 const logger = require('../utils/logger');
 
 class TransferService {
   /**
+   * Check if a user has an active or recent exercise session (i.e., is hiking)
+   * Returns the session if found, null otherwise
+   */
+  static async getActiveExerciseSession(userId) {
+    try {
+      // Look for active session or one that ended within the last 10 minutes
+      const tenMinutesAgo = new Date(Date.now() - 10 * 60 * 1000);
+
+      const session = await ExerciseSession.findOne({
+        userId,
+        $or: [
+          { status: 'active' },
+          { status: 'rewarded', endTime: { $gte: tenMinutesAgo } },
+          { status: 'completed', endTime: { $gte: tenMinutesAgo }, miningTriggered: true }
+        ]
+      }).sort({ createdAt: -1 });
+
+      // Verify the session has enough activity to count as "hiking"
+      if (session && session.validExerciseSeconds >= 60) {
+        return session;
+      }
+      return null;
+    } catch (error) {
+      logger.error('Error checking active session:', error);
+      return null;
+    }
+  }
+
+  /**
+   * Record a friendly transfer if both users are hiking
+   */
+  static async checkAndRecordFriendlyTransfer(transfer, fromSession, toSession, location = null) {
+    try {
+      if (!fromSession || !toSession) return;
+
+      await FriendlinessDaemon.recordFriendlyTransfer({
+        transferId: transfer._id,
+        fromUserId: transfer.fromUserId,
+        toUserId: transfer.toUserId,
+        amount: transfer.amount,
+        fromSessionId: fromSession._id,
+        toSessionId: toSession._id,
+        location
+      });
+
+      logger.info(`Recorded friendly transfer: both users were hiking during transfer ${transfer._id}`);
+    } catch (error) {
+      logger.error('Error recording friendly transfer:', error);
+    }
+  }
+
+  /**
    * Send coins directly to another user by username
    */
-  static async sendToUser(fromUserId, toUsername, amount, message = '') {
+  static async sendToUser(fromUserId, toUsername, amount, message = '', location = null) {
     try {
       // Find recipient
       const recipient = await User.findOne({ username: toUsername });
@@ -78,13 +132,24 @@ class TransferService {
 
       logger.info(`User ${fromUserId} sent ${amount} coins to ${toUsername}`);
 
+      // Check if both users are hiking and record friendly transfer
+      const [fromSession, toSession] = await Promise.all([
+        this.getActiveExerciseSession(fromUserId),
+        this.getActiveExerciseSession(recipient._id.toString())
+      ]);
+
+      if (fromSession && toSession) {
+        await this.checkAndRecordFriendlyTransfer(transfer, fromSession, toSession, location);
+      }
+
       return {
         success: true,
         transfer: {
           id: transfer._id,
           amount,
           toUsername: recipient.username,
-          message
+          message,
+          friendlyBonus: fromSession && toSession // Let the UI know this was a friendly transfer
         }
       };
     } catch (error) {
@@ -224,11 +289,22 @@ class TransferService {
 
       logger.info(`User ${claimUserId} claimed QR transfer ${transfer._id} for ${transfer.amount} coins`);
 
+      // Check if both users are hiking and record friendly transfer (perfect for in-person hike trades!)
+      const [fromSession, toSession] = await Promise.all([
+        this.getActiveExerciseSession(transfer.fromUserId.toString()),
+        this.getActiveExerciseSession(claimUserId)
+      ]);
+
+      if (fromSession && toSession) {
+        await this.checkAndRecordFriendlyTransfer(transfer, fromSession, toSession);
+      }
+
       return {
         success: true,
         amount: transfer.amount,
         message: transfer.message,
-        fromUsername: sender?.username || 'Unknown'
+        fromUsername: sender?.username || 'Unknown',
+        friendlyBonus: fromSession && toSession // Let the UI know this was a friendly transfer
       };
     } catch (error) {
       logger.error('Error claiming QR transfer:', error);
