@@ -1,0 +1,60 @@
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+
+# Build outputs
+dist/
+build/
+.next/
+
+# Mobile app
+mobile-app/.expo/
+mobile-app/ios/
+mobile-app/android/
+*.apk
+*.aab
+*.ipa
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Test coverage
+coverage/
+.nyc_output/
+
+# Coin daemon data
+coin-daemon/data/
+*.dat
+*.log
+
+# Secrets
+*.pem
+*.key
+credentials.json
+rpc_credentials.json
+
+# Docker
+.docker/
+
+# Misc
+.cache/
+tmp/
+temp/

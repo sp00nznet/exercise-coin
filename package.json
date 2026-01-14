@@ -1,0 +1,35 @@
+{
+  "name": "exercise-coin",
+  "version": "1.0.0",
+  "description": "Get rewarded with cryptocurrency for exercising - track your steps, earn Exercise Coin",
+  "private": true,
+  "workspaces": [
+    "server",
+    "mobile-app"
+  ],
+  "scripts": {
+    "server": "npm run start --workspace=server",
+    "server:dev": "npm run dev --workspace=server",
+    "mobile": "npm run start --workspace=mobile-app",
+    "install:all": "npm install && npm install --workspace=server && npm install --workspace=mobile-app",
+    "docker:up": "docker-compose up -d",
+    "docker:down": "docker-compose down",
+    "docker:logs": "docker-compose logs -f",
+    "test": "npm run test --workspaces --if-present",
+    "lint": "npm run lint --workspaces --if-present"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/sp00nznet/exercise-coin.git"
+  },
+  "keywords": [
+    "cryptocurrency",
+    "fitness",
+    "exercise",
+    "pedometer",
+    "mining",
+    "rewards"
+  ],
+  "author": "sp00nznet",
+  "license": "MIT"
+}

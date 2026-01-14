@@ -1,0 +1,65 @@
+version: '3.8'
+
+services:
+  # MongoDB Database
+  mongodb:
+    image: mongo:7
+    container_name: exercisecoin-mongodb
+    restart: unless-stopped
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASSWORD:-changeme}
+      MONGO_INITDB_DATABASE: exercise-coin
+    volumes:
+      - mongodb_data:/data/db
+    ports:
+      - "27017:27017"
+    networks:
+      - exercisecoin-network
+
+  # Middleware Server
+  server:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    container_name: exercisecoin-server
+    restart: unless-stopped
+    depends_on:
+      - mongodb
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      MONGODB_URI: mongodb://admin:${MONGO_PASSWORD:-changeme}@mongodb:27017/exercise-coin?authSource=admin
+      JWT_SECRET: ${JWT_SECRET:-change-this-in-production}
+      JWT_EXPIRES_IN: 7d
+      COIN_DAEMON_HOST: daemon
+      COIN_DAEMON_PORT: 19332
+    ports:
+      - "3000:3000"
+    volumes:
+      - daemon_data:/var/lib/exercisecoin
+    networks:
+      - exercisecoin-network
+
+  # Base Coin Daemon (seed node)
+  daemon:
+    build:
+      context: ./coin-daemon
+      dockerfile: Dockerfile
+    container_name: exercisecoin-daemon
+    restart: unless-stopped
+    volumes:
+      - daemon_data:/var/lib/exercisecoin
+    ports:
+      - "19332:19332"
+      - "19333:19333"
+    networks:
+      - exercisecoin-network
+
+volumes:
+  mongodb_data:
+  daemon_data:
+
+networks:
+  exercisecoin-network:
+    driver: bridge

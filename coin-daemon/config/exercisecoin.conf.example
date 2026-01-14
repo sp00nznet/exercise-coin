@@ -1,0 +1,27 @@
+# Exercise Coin Configuration
+# Copy this file and customize for each user daemon instance
+
+# RPC Settings
+rpcuser=exercisecoin
+rpcpassword=CHANGE_THIS_TO_RANDOM_PASSWORD
+rpcport=19332
+rpcallowip=127.0.0.1
+
+# Network Settings
+server=1
+listen=1
+port=19333
+
+# Mining Settings
+gen=0
+
+# Wallet Settings
+wallet=wallet.dat
+
+# Logging
+debug=1
+printtoconsole=0
+logips=1
+
+# Connection settings
+maxconnections=25
