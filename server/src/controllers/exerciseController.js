@@ -3,6 +3,7 @@ const Transaction = require('../models/Transaction');
 const User = require('../models/User');
 const ExerciseDetectionService = require('../services/ExerciseDetectionService');
 const CoinDaemonService = require('../services/CoinDaemonService');
+const AchievementService = require('../services/AchievementService');
 const logger = require('../utils/logger');
 
 exports.startSession = async (req, res, next) => {
@@ -181,6 +182,9 @@ exports.endSession = async (req, res, next) => {
 
     logger.info(`Exercise session ended for user ${userId}: ${session.status}`);
 
+    // Check for new achievements
+    const achievementResult = await AchievementService.checkAchievements(userId);
+
     res.json({
       message: 'Exercise session ended',
       session: {
@@ -194,7 +198,8 @@ exports.endSession = async (req, res, next) => {
         miningTriggered: session.miningTriggered,
         miningDurationSeconds: session.miningDurationSeconds,
         coinsEarned: session.coinsEarned
-      }
+      },
+      newAchievements: achievementResult.newAchievements
     });
 
   } catch (error) {

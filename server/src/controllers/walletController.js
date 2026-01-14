@@ -32,7 +32,12 @@ exports.getWalletAddress = async (req, res, next) => {
     if (!user.walletAddress) {
       // Initialize daemon to generate wallet address
       await CoinDaemonService.initializeUserDaemon(userId);
-      await user.reload();
+      // Refetch user from database to get updated wallet address
+      const updatedUser = await User.findById(userId);
+      if (updatedUser) {
+        user.walletAddress = updatedUser.walletAddress;
+        user.daemonStatus = updatedUser.daemonStatus;
+      }
     }
 
     res.json({
@@ -155,10 +160,11 @@ exports.getEarningsHistory = async (req, res, next) => {
     const startDate = new Date();
     startDate.setDate(startDate.getDate() - parseInt(days));
 
+    const mongoose = require('mongoose');
     const earnings = await Transaction.aggregate([
       {
         $match: {
-          userId: require('mongoose').Types.ObjectId(userId),
+          userId: new mongoose.Types.ObjectId(userId),
           type: 'mining_reward',
           createdAt: { $gte: startDate }
         }

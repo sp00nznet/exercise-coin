@@ -15,6 +15,9 @@ import HomeScreen from './src/screens/HomeScreen';
 import ExerciseScreen from './src/screens/ExerciseScreen';
 import WalletScreen from './src/screens/WalletScreen';
 import ProfileScreen from './src/screens/ProfileScreen';
+import AchievementsScreen from './src/screens/AchievementsScreen';
+import TreasureMapScreen from './src/screens/TreasureMapScreen';
+import SendCoinsScreen from './src/screens/SendCoinsScreen';
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -42,6 +45,13 @@ function MainTabs() {
         component={ExerciseScreen}
         options={{
           tabBarIcon: ({ color }) => <Text style={{ color, fontSize: 20 }}>🏃</Text>
+        }}
+      />
+      <Tab.Screen
+        name="Treasure"
+        component={TreasureMapScreen}
+        options={{
+          tabBarIcon: ({ color }) => <Text style={{ color, fontSize: 20 }}>🗺️</Text>
         }}
       />
       <Tab.Screen
@@ -80,11 +90,23 @@ export default function App() {
           }}
         >
           {token ? (
-            <Stack.Screen
-              name="Main"
-              component={MainTabs}
-              options={{ headerShown: false }}
-            />
+            <>
+              <Stack.Screen
+                name="Main"
+                component={MainTabs}
+                options={{ headerShown: false }}
+              />
+              <Stack.Screen
+                name="Achievements"
+                component={AchievementsScreen}
+                options={{ title: 'Achievements' }}
+              />
+              <Stack.Screen
+                name="SendCoins"
+                component={SendCoinsScreen}
+                options={{ title: 'Send & Receive' }}
+              />
+            </>
           ) : (
             <>
               <Stack.Screen name="Login" component={LoginScreen} />
