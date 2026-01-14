@@ -8,6 +8,9 @@ const CoinTransfer = require('./CoinTransfer');
 const Admin = require('./Admin');
 const DropZone = require('./DropZone');
 const FriendlyTransfer = require('./FriendlyTransfer');
+const RestStopBonus = require('./RestStopBonus');
+const ExchangeWallet = require('./ExchangeWallet');
+const ExchangeOrder = require('./ExchangeOrder');
 
 module.exports = {
   User,
@@ -19,5 +22,8 @@ module.exports = {
   CoinTransfer,
   Admin,
   DropZone,
-  FriendlyTransfer
+  FriendlyTransfer,
+  RestStopBonus,
+  ExchangeWallet,
+  ExchangeOrder
 };

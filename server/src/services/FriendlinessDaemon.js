@@ -2,28 +2,24 @@ const FriendlyTransfer = require('../models/FriendlyTransfer');
 const User = require('../models/User');
 const Transaction = require('../models/Transaction');
 const logger = require('../utils/logger');
+const { TOKENOMICS, getFriendlinessMultiplier } = require('../config/tokenomics');
 
 class FriendlinessDaemon {
   static isRunning = false;
   static lastRunTime = null;
-  static miningDurationSeconds = 20 * 60; // 20 minutes
   static intervalId = null;
-  static bonusChance = 0.3; // 30% chance of bonus when eligible
 
   /**
    * Initialize the daemon scheduler
    * Runs every Saturday at midnight UTC (day before treasure drops)
    */
   static initialize() {
-    // Check every hour if it's time to run
     this.intervalId = setInterval(() => {
       this.checkAndRun();
     }, 60 * 60 * 1000);
 
-    // Also check on startup
     this.checkAndRun();
-
-    logger.info('FriendlinessDaemon initialized - will run weekly');
+    logger.info('🤗 FriendlinessDaemon initialized - weekly friendliness bonuses enabled');
   }
 
   /**
@@ -34,15 +30,11 @@ class FriendlinessDaemon {
     const dayOfWeek = now.getUTCDay(); // 6 = Saturday
     const hour = now.getUTCHours();
 
-    // Run on Saturday at midnight UTC
     if (dayOfWeek === 6 && hour === 0) {
       if (this.lastRunTime) {
         const hoursSinceLastRun = (now - this.lastRunTime) / (1000 * 60 * 60);
-        if (hoursSinceLastRun < 24) {
-          return;
-        }
+        if (hoursSinceLastRun < 24) return;
       }
-
       await this.run();
     }
   }
@@ -59,7 +51,7 @@ class FriendlinessDaemon {
     this.isRunning = true;
     this.lastRunTime = new Date();
 
-    logger.info('FriendlinessDaemon starting weekly friendliness bonus distribution...');
+    logger.info('🤗 FriendlinessDaemon starting weekly friendliness bonus distribution...');
 
     try {
       // Mine for bonus coins
@@ -72,6 +64,7 @@ class FriendlinessDaemon {
       }
 
       const totalCoins = miningResult.coinsEarned;
+      logger.info(`⛏️ Mined ${totalCoins} EXC for friendliness bonuses`);
 
       // Get eligible transfers from this week
       const eligibleTransfers = await this.getEligibleTransfers();
@@ -82,10 +75,12 @@ class FriendlinessDaemon {
         return { success: true, bonuses: 0, totalCoins: 0 };
       }
 
+      logger.info(`📋 Found ${eligibleTransfers.length} eligible friendly transfers`);
+
       // Distribute bonuses randomly
       const bonuses = await this.distributeBonuses(eligibleTransfers, totalCoins);
 
-      logger.info(`FriendlinessDaemon completed: ${bonuses.length} bonuses totaling ${totalCoins} coins`);
+      logger.info(`🎁 FriendlinessDaemon completed: ${bonuses.length} bonuses awarded`);
 
       this.isRunning = false;
       return { success: true, bonuses: bonuses.length, totalCoins };
@@ -101,11 +96,11 @@ class FriendlinessDaemon {
    */
   static async mineForBonuses() {
     try {
-      const estimatedCoinsPerMinute = 0.1;
-      const miningMinutes = this.miningDurationSeconds / 60;
-      const coinsEarned = miningMinutes * estimatedCoinsPerMinute;
+      const miningMinutes = TOKENOMICS.FRIENDLINESS.MINING_MINUTES;
+      const coinsPerMinute = TOKENOMICS.EXERCISE_MINING.COINS_PER_MINING_MINUTE;
+      const coinsEarned = miningMinutes * coinsPerMinute;
 
-      logger.info(`FriendlinessDaemon mined for ${miningMinutes} minutes, earned ~${coinsEarned} coins`);
+      logger.info(`⛏️ Mining for ${miningMinutes} minutes at ${coinsPerMinute} EXC/min`);
 
       return {
         success: true,
@@ -125,7 +120,6 @@ class FriendlinessDaemon {
     const weekNumber = this.getWeekNumber(now);
     const year = now.getFullYear();
 
-    // Find all friendly transfers from this week that haven't received bonuses
     const transfers = await FriendlyTransfer.find({
       weekNumber,
       year,
@@ -140,75 +134,89 @@ class FriendlinessDaemon {
    */
   static async distributeBonuses(eligibleTransfers, totalCoins) {
     const bonuses = [];
+    const bonusChance = TOKENOMICS.FRIENDLINESS.BONUS_CHANCE;
+    const minBonus = TOKENOMICS.FRIENDLINESS.MIN_BONUS;
+    const maxBonus = TOKENOMICS.FRIENDLINESS.MAX_BONUS;
 
-    // Each eligible transfer has a chance to win
     for (const transfer of eligibleTransfers) {
-      if (Math.random() < this.bonusChance) {
-        // Calculate bonus amount (varies between 0.5x and 2x of transfer amount, capped by available coins)
-        const multiplier = 0.5 + Math.random() * 1.5;
-        let bonusAmount = Math.min(
-          transfer.transferAmount * multiplier,
-          totalCoins / eligibleTransfers.length * 2
-        );
+      // Each transfer has a chance to win
+      if (Math.random() < bonusChance) {
+        // Get multiplier based on transfer amount
+        const multiplier = getFriendlinessMultiplier(transfer.transferAmount);
+
+        // Calculate bonus amount
+        let baseBonus = minBonus + Math.random() * (maxBonus - minBonus);
+        let bonusAmount = Math.min(baseBonus * multiplier, totalCoins / eligibleTransfers.length * 3);
         bonusAmount = Math.round(bonusAmount * 100) / 100;
 
-        if (bonusAmount < 0.01) continue;
+        if (bonusAmount < 1) continue;
 
-        // Award bonus to BOTH users!
-        const bonusPerUser = bonusAmount / 2;
+        // Award bonus to BOTH users equally!
+        const bonusPerUser = Math.round((bonusAmount / 2) * 100) / 100;
 
-        // Update both users' balances
-        await Promise.all([
-          User.findByIdAndUpdate(transfer.fromUserId, {
-            $inc: { totalCoinsEarned: bonusPerUser }
-          }),
-          User.findByIdAndUpdate(transfer.toUserId, {
-            $inc: { totalCoinsEarned: bonusPerUser }
-          })
-        ]);
+        try {
+          // Update both users' balances
+          await Promise.all([
+            User.findByIdAndUpdate(transfer.fromUserId._id || transfer.fromUserId, {
+              $inc: { totalCoinsEarned: bonusPerUser }
+            }),
+            User.findByIdAndUpdate(transfer.toUserId._id || transfer.toUserId, {
+              $inc: { totalCoinsEarned: bonusPerUser }
+            })
+          ]);
 
-        // Create transaction records
-        await Promise.all([
-          Transaction.create({
-            userId: transfer.fromUserId,
-            type: 'mining_reward',
-            amount: bonusPerUser,
-            status: 'confirmed',
-            confirmedAt: new Date(),
-            metadata: {
-              type: 'friendliness_bonus',
-              friendlyTransferId: transfer._id,
-              tradedWith: transfer.toUserId
-            }
-          }),
-          Transaction.create({
-            userId: transfer.toUserId,
-            type: 'mining_reward',
-            amount: bonusPerUser,
-            status: 'confirmed',
-            confirmedAt: new Date(),
-            metadata: {
-              type: 'friendliness_bonus',
-              friendlyTransferId: transfer._id,
-              tradedWith: transfer.fromUserId
-            }
-          })
-        ]);
+          // Create transaction records
+          await Promise.all([
+            Transaction.create({
+              userId: transfer.fromUserId._id || transfer.fromUserId,
+              type: 'mining_reward',
+              amount: bonusPerUser,
+              status: 'confirmed',
+              confirmedAt: new Date(),
+              metadata: {
+                type: 'friendliness_bonus',
+                friendlyTransferId: transfer._id,
+                tradedWith: transfer.toUserId.username || 'Unknown',
+                originalTransferAmount: transfer.transferAmount,
+                multiplier
+              }
+            }),
+            Transaction.create({
+              userId: transfer.toUserId._id || transfer.toUserId,
+              type: 'mining_reward',
+              amount: bonusPerUser,
+              status: 'confirmed',
+              confirmedAt: new Date(),
+              metadata: {
+                type: 'friendliness_bonus',
+                friendlyTransferId: transfer._id,
+                tradedWith: transfer.fromUserId.username || 'Unknown',
+                originalTransferAmount: transfer.transferAmount,
+                multiplier
+              }
+            })
+          ]);
 
-        // Mark transfer as bonus awarded
-        transfer.bonusAwarded = true;
-        transfer.bonusAmount = bonusAmount;
-        transfer.bonusAwardedAt = new Date();
-        await transfer.save();
+          // Mark transfer as bonus awarded
+          transfer.bonusAwarded = true;
+          transfer.bonusAmount = bonusAmount;
+          transfer.bonusAwardedAt = new Date();
+          await transfer.save();
 
-        bonuses.push({
-          transferId: transfer._id,
-          fromUser: transfer.fromUserId,
-          toUser: transfer.toUserId,
-          bonusAmount
-        });
+          bonuses.push({
+            transferId: transfer._id,
+            fromUser: transfer.fromUserId.username || transfer.fromUserId,
+            toUser: transfer.toUserId.username || transfer.toUserId,
+            originalAmount: transfer.transferAmount,
+            bonusAmount,
+            bonusPerUser,
+            multiplier
+          });
 
-        logger.info(`Friendliness bonus awarded: ${bonusAmount} EXC to transfer ${transfer._id}`);
+          logger.info(`🤗 Friendliness bonus: ${bonusAmount} EXC (${bonusPerUser} each) for transfer of ${transfer.transferAmount} EXC (${multiplier}x multiplier)`);
+        } catch (error) {
+          logger.error(`Failed to award bonus for transfer ${transfer._id}:`, error);
+        }
       }
     }
 
@@ -231,14 +239,17 @@ class FriendlinessDaemon {
         transferAmount: transferData.amount,
         fromUserSessionId: transferData.fromSessionId,
         toUserSessionId: transferData.toSessionId,
-        location: transferData.location,
+        location: transferData.location ? {
+          type: 'Point',
+          coordinates: [transferData.location.longitude, transferData.location.latitude]
+        } : undefined,
         weekNumber,
         year
       });
 
       await friendlyTransfer.save();
 
-      logger.info(`Recorded friendly transfer: ${transferData.transferId}`);
+      logger.info(`🤝 Recorded friendly transfer: ${transferData.amount} EXC between hiking buddies!`);
 
       return { success: true, friendlyTransfer };
     } catch (error) {
@@ -265,8 +276,7 @@ class FriendlinessDaemon {
     return {
       isRunning: this.isRunning,
       lastRunTime: this.lastRunTime,
-      miningDurationSeconds: this.miningDurationSeconds,
-      bonusChance: this.bonusChance,
+      config: TOKENOMICS.FRIENDLINESS,
       nextScheduledRun: this.getNextScheduledRun()
     };
   }
@@ -278,13 +288,8 @@ class FriendlinessDaemon {
     const now = new Date();
     const daysUntilSaturday = (6 - now.getUTCDay() + 7) % 7;
     const nextSaturday = new Date(now);
-    nextSaturday.setUTCDate(now.getUTCDate() + daysUntilSaturday);
+    nextSaturday.setUTCDate(now.getUTCDate() + (daysUntilSaturday || 7));
     nextSaturday.setUTCHours(0, 0, 0, 0);
-
-    if (nextSaturday <= now) {
-      nextSaturday.setUTCDate(nextSaturday.getUTCDate() + 7);
-    }
-
     return nextSaturday;
   }
 
