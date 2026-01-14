@@ -2,6 +2,7 @@ const { exec, spawn } = require('child_process');
 const { promisify } = require('util');
 const logger = require('../utils/logger');
 const User = require('../models/User');
+const { TOKENOMICS, calculateMiningReward } = require('../config/tokenomics');
 
 const execAsync = promisify(exec);
 
@@ -131,26 +132,37 @@ class CoinDaemonService {
 
     return new Promise((resolve) => {
       setTimeout(() => {
-        // Simulate mining results
-        // In real implementation, check actual blockchain for mined blocks
-        const difficulty = 1000; // Simulated network difficulty
-        const hashRate = 100; // Simulated hash rate
-        const blockReward = 50; // Coins per block
+        // Mining reward calculation based on F7CoinV4 tokenomics:
+        // - Block Reward: 77 EXC
+        // - Block Time: 30 seconds
+        // - Mining time = 50% of exercise time
+        // - ~5.13 EXC per minute of mining (77 / 15 minutes)
 
-        // Probability of finding a block during mining window
-        const blocksExpected = (hashRate * durationSeconds) / difficulty;
-        const coinsEarned = Math.random() < blocksExpected ?
-          blockReward * Math.floor(Math.random() * 2 + 1) : 0;
+        const { BLOCKCHAIN, EXERCISE_MINING } = TOKENOMICS;
+        const miningMinutes = durationSeconds / 60;
+
+        // Calculate base reward using tokenomics formula
+        // This ensures consistent rewards based on exercise duration
+        const baseReward = miningMinutes * EXERCISE_MINING.COINS_PER_MINING_MINUTE;
+
+        // Add small random variance (+-10%) to make it feel more natural
+        const variance = 0.9 + (Math.random() * 0.2);
+        const coinsEarned = Math.round(baseReward * variance * 100) / 100;
+
+        // Calculate equivalent blocks found
+        const blocksFound = coinsEarned / BLOCKCHAIN.BLOCK_REWARD;
 
         const result = {
           success: true,
           durationSeconds,
+          miningMinutes: Math.round(miningMinutes * 100) / 100,
           coinsEarned,
-          blocksFound: coinsEarned > 0 ? Math.ceil(coinsEarned / blockReward) : 0,
+          blocksFound: Math.round(blocksFound * 1000) / 1000,
+          blockReward: BLOCKCHAIN.BLOCK_REWARD,
           timestamp: new Date()
         };
 
-        logger.info(`Mining completed for user ${userId}: ${coinsEarned} coins earned`);
+        logger.info(`Mining completed for user ${userId}: ${coinsEarned} EXC earned (${miningMinutes.toFixed(2)} min mining time)`);
         resolve(result);
       }, Math.min(durationSeconds * 100, 5000)); // Simulate with max 5 second delay
     });

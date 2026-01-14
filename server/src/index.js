@@ -13,6 +13,8 @@ const achievementRoutes = require('./routes/achievements');
 const treasureRoutes = require('./routes/treasure');
 const transferRoutes = require('./routes/transfer');
 const adminRoutes = require('./routes/admin');
+const restStopRoutes = require('./routes/restStop');
+const exchangeRoutes = require('./routes/exchange');
 const { errorHandler } = require('./middleware/errorHandler');
 const logger = require('./utils/logger');
 const { AchievementService, RandomDropDaemon, FriendlinessDaemon, TreasureService, TransferService } = require('./services');
@@ -41,6 +43,8 @@ app.use('/api/achievements', achievementRoutes);
 app.use('/api/treasure', treasureRoutes);
 app.use('/api/transfer', transferRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/rest-stop', restStopRoutes);
+app.use('/api/exchange', exchangeRoutes);
 
 // Health check
 app.get('/health', (req, res) => {

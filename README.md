@@ -15,6 +15,7 @@
   <a href="#-how-it-works">⚙️ How It Works</a> •
   <a href="#-treasure-system">🗺️ Treasure</a> •
   <a href="#-social-features">👥 Social</a> •
+  <a href="#-exchange">💱 Exchange</a> •
   <a href="#-documentation">📚 Docs</a>
 </p>
 
@@ -102,8 +103,17 @@ Drop coins at real-world locations for others to discover!
 🎉 They collect your treasure!
 ```
 
-### 🎲 Random Drops
-Every **Sunday**, our **Random Drop Daemon** mines coins and scatters them at exercise-friendly locations:
+### 🎲 Random Drops - Tiered System!
+Every **Sunday**, our **Random Drop Daemon** creates treasure drops with a chance for HUGE rewards!
+
+| Tier | Chance | Reward Range | Message |
+|------|--------|--------------|---------|
+| 🥉 **Common** | 55% | 5-25 EXC | "Nice find! Keep moving!" |
+| 🥈 **Rare** | 25% | 30-77 EXC | "Great discovery!" |
+| 🥇 **Epic** | 12% | 100-300 EXC | "WOW! Epic treasure!" |
+| 💎 **LEGENDARY** | 8% | 500-1,000 EXC | "JACKPOT! LEGENDARY FIND!" |
+
+Drops are scattered at exercise-friendly locations:
 - 🥾 Hiking trails
 - 🏞️ Parks & nature reserves
 - 🚶 Walking paths
@@ -148,9 +158,81 @@ When you trade coins with another user and **BOTH** of you are actively exercisi
 
 **How it works:**
 - 📅 Runs every **Saturday**
-- ⏱️ Mines for ~20 minutes worth of coins
-- 🎲 **30% chance** of bonus per eligible transfer
+- ⏱️ Mines for ~30 minutes worth of coins
+- 🎲 **35% chance** of bonus per eligible transfer
 - 💝 Both sender AND receiver get the bonus!
+- 🎰 Multipliers based on transfer amounts (up to 3x!)
+
+### 🍔 Rest Stop Bonus
+
+When you're exercising with a friend and stop for a break together, you both earn bonus coins!
+
+```
+🏃 You and a friend are hiking
+    ↓
+🍕 You stop at a restaurant together
+    ↓
+📍 App detects you're at the same venue
+    ↓
+🎉 "Cheers guys!" Both earn 5-25 EXC!
+```
+
+**Venue Multipliers:**
+| Venue Type | Multiplier |
+|------------|------------|
+| 🍔 Fast Food | 1.0x |
+| ☕ Cafe | 1.2x |
+| 🍽️ Restaurant | 1.5x |
+| 🥗 Health Food | 2.0x (bonus for healthy eating!) |
+| 🍺 Brewery | 1.3x |
+
+---
+
+## 💱 Exchange
+
+Trade your hard-earned EXC for real cryptocurrencies and fiat!
+
+### Supported Currencies
+
+The exchange supports multiple trading pairs, all managed by administrators:
+
+| Type | Currencies |
+|------|------------|
+| 🪙 **Crypto** | BTC, ETH, LTC, USDT, DOGE |
+| 💵 **Fiat** | USD, EUR (via bank transfer) |
+
+### How It Works
+
+```
+🏃 Earn EXC through exercise
+    ↓
+💱 Visit the exchange
+    ↓
+📊 View current rates
+    ↓
+💸 Place buy or sell order
+    ↓
+✅ Admin processes your trade
+    ↓
+💰 Receive your currency!
+```
+
+### Features
+
+| Feature | Description |
+|---------|-------------|
+| 📊 **Real-time Rates** | Admin-updated exchange rates |
+| 🔒 **Secure Orders** | Escrow system for sell orders |
+| 📋 **Order Tracking** | Full order history & status |
+| 💰 **Low Fees** | Only 1% trading fee |
+
+### Admin Portal
+
+Administrators manage the exchange via a dedicated portal:
+- 👛 Configure wallet addresses for each currency
+- 📈 Set and update exchange rates
+- 📋 Process buy/sell orders
+- 📊 Monitor trading activity
 
 ---
 
@@ -288,7 +370,7 @@ npm run dev
 
 ## 🌐 Network Parameters
 
-Exercise Coin uses unique network parameters for complete blockchain isolation:
+Exercise Coin uses unique network parameters based on F7CoinV4:
 
 | Parameter | 🌍 Mainnet | 🧪 Testnet |
 |-----------|:----------:|:----------:|
@@ -296,6 +378,20 @@ Exercise Coin uses unique network parameters for complete blockchain isolation:
 | RPC Port | `39338` | `39341` |
 | Address Prefix | `E` | `m` |
 | Bech32 Prefix | `exc` | `texc` |
+
+### 🎰 Tokenomics
+
+| Parameter | Value |
+|-----------|-------|
+| 💰 **Block Reward** | 77 EXC |
+| ⏱️ **Block Time** | 30 seconds |
+| 📊 **Total Supply** | 200,000,000 EXC |
+| 📉 **Halving** | Every 840,000 blocks (~292 days) |
+| ⚡ **Algorithm** | Scrypt |
+
+**Mining Rewards:**
+- 30 min exercise = 15 min mining = ~77 EXC (one full block!)
+- ~5.13 EXC per minute of mining time
 
 ---
 
@@ -317,6 +413,7 @@ exercise-coin/
 │       ├── models/          # MongoDB schemas
 │       ├── services/        # Business logic & daemons
 │       ├── routes/          # API routes
+│       ├── config/          # Tokenomics & settings
 │       └── middleware/      # Auth, validation
 │
 ├── 👑 admin-portal/         # React admin dashboard
@@ -324,6 +421,13 @@ exercise-coin/
 │       ├── pages/           # Dashboard pages
 │       ├── components/      # Reusable components
 │       └── services/        # Admin API client
+│
+├── 💱 exchange/             # Exchange trading platform
+│   └── src/
+│       ├── pages/           # Trading & admin pages
+│       ├── components/      # UI components
+│       ├── context/         # Auth context
+│       └── services/        # Exchange API client
 │
 ├── ⛏️ coin-daemon/          # Cryptocurrency daemon
 │   ├── config/              # Configuration files
@@ -349,6 +453,9 @@ exercise-coin/
 | 🏆 [Achievements](docs/achievements.md) | Achievement system guide |
 | 👑 [Admin Portal](docs/admin-portal.md) | Admin dashboard guide |
 | 🤗 [Friendliness Miner](docs/friendliness-miner.md) | Social mining bonus |
+| 💱 [Exchange](docs/exchange.md) | Trading platform guide |
+| 🍔 [Rest Stop Bonus](docs/rest-stop-bonus.md) | Break time bonuses |
+| 🎰 [Tokenomics](docs/tokenomics.md) | Economic system details |
 
 ---
 
