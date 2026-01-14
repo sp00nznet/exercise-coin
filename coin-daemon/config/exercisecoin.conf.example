@@ -1,0 +1,35 @@
+# Exercise Coin Configuration
+# Copy this file and customize for each user daemon instance
+#
+# IMPORTANT: These network parameters are UNIQUE to Exercise Coin
+# Do NOT use F7CoinV4 or other altcoin parameters
+
+# RPC Settings
+rpcuser=exercisecoin
+rpcpassword=CHANGE_THIS_TO_RANDOM_PASSWORD
+rpcport=39338
+rpcallowip=127.0.0.1
+
+# Network Settings (Exercise Coin Mainnet)
+server=1
+listen=1
+port=39339
+
+# Mining Settings
+gen=0
+
+# Wallet Settings
+wallet=wallet.dat
+
+# Logging
+debug=1
+printtoconsole=0
+logips=1
+
+# Connection settings
+maxconnections=25
+
+# Testnet configuration (uncomment to use testnet)
+# testnet=1
+# rpcport=39341
+# port=39340
