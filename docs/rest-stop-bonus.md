@@ -47,33 +47,74 @@ To earn a rest stop bonus:
 - Both must be at a recognized venue
 - Neither user can have claimed a bonus in the last 4 hours
 
-### Bonus Message
+### Bonus Messages
 
-When successful, users see a fun message based on the venue:
+Messages encourage healthy choices! Examples:
 
+**Healthy Venues (Celebrating!):**
 | Venue Type | Example Message |
 |------------|-----------------|
-| Fast Food | "Refueling after your workout! Smart choice!" |
-| Cafe | "Coffee break! You've earned it after that workout!" |
-| Restaurant | "A proper sit-down meal after exercise - well deserved!" |
-| Health Food | "AMAZING! Healthy food after exercise - you're doing it right!" |
-| Brewery | "Post-hike beers are the best beers!" |
-| Ice Cream | "Ice cream reward for all that exercise!" |
+| Health Food | "AMAZING CHOICE! Healthy food = TRIPLE POINTS!" |
+| Salad Bar | "LEGENDARY CHOICE! Greens after gains = MAX BONUS!" |
+| Juice Bar | "SMART! Fresh juice = Fresh gains! Big bonus!" |
+| Sushi | "Sushi squad! Omega-3 bonus!" |
+
+**Moderate Venues:**
+| Venue Type | Example Message |
+|------------|-----------------|
+| Cafe | "Coffee break! Hydration bonus!" |
+| Restaurant | "Hope you picked something healthy!" |
+
+**Less Healthy Venues (Gentle Nudges!):**
+| Venue Type | Example Message |
+|------------|-----------------|
+| Fast Food | "Small bonus. Your body deserves better!" |
+| Burger | "Tiny bonus! A salad would've been 3X!" |
+| Fried Chicken | "Very small! Grilled chicken = 5X more!" |
+| Pizza | "Pizza bonus is modest. Try veggies next time!" |
 
 ---
 
 ## Venue Types
 
-Different venue types have different bonus multipliers:
+**Philosophy: 🥗 Salad > 🍔 Burger**
+
+Healthy choices get MUCH bigger bonuses! Your body worked hard - fuel it right!
+
+### Healthy Options (Big Bonuses!)
 
 | Venue Type | Multiplier | Example |
 |------------|------------|---------|
-| Fast Food | 1.0x | McDonald's, Subway |
-| Cafe | 1.2x | Starbucks, local cafes |
-| Ice Cream | 1.1x | Baskin Robbins |
-| Brewery | 1.3x | Local brewpubs |
-| Restaurant | 1.5x | Sit-down restaurants |
-| Health Food | 2.0x | Whole Foods, salad bars |
+| Health Food | 3.0x | Whole Foods, Sweetgreen |
+| Juice Bar | 2.8x | Jamba Juice, local juice spots |
+| Salad Bar | 2.5x | Chopt, salad-focused spots |
+| Vegetarian | 2.5x | Veggie restaurants |
+| Poke Bowl | 2.3x | Pokeworks, poke spots |
+| Acai | 2.3x | Acai bowl cafes |
+| Organic | 2.5x | Organic cafes |
+| Mediterranean | 1.8x | Greek, Lebanese restaurants |
+| Sushi | 1.7x | Sushi restaurants |
+
+### Moderate Options
+
+| Venue Type | Multiplier | Example |
+|------------|------------|---------|
+| Cafe | 1.5x | Coffee shops |
+| Asian | 1.4x | Thai, Vietnamese, Chinese |
+| Restaurant | 1.3x | Sit-down restaurants |
+| Deli | 1.2x | Sandwich shops |
+
+### Less Healthy (Small Bonuses)
+
+| Venue Type | Multiplier | Example |
+|------------|------------|---------|
+| Brewery | 1.0x | Brewpubs |
+| Pizza | 0.8x | Pizza places |
+| Ice Cream | 0.7x | Ice cream shops |
+| Fast Food | 0.5x | McDonald's, Burger King |
+| Burger | 0.5x | Burger joints |
+| Fried Chicken | 0.4x | KFC, Popeyes |
+| Donut | 0.4x | Donut shops |
 
 ### Bonus Calculation
 
@@ -81,10 +122,17 @@ Different venue types have different bonus multipliers:
 Base Bonus: 5-25 EXC (random)
 Final Bonus = Base Bonus × Venue Multiplier
 
-Example:
+Example - Healthy Choice:
 - Base roll: 15 EXC
-- Venue: Health Food (2.0x)
-- Final: 30 EXC per person
+- Venue: Salad Bar (2.5x)
+- Final: 37.5 EXC per person
+
+Example - Unhealthy Choice:
+- Base roll: 15 EXC
+- Venue: Fast Food (0.5x)
+- Final: 7.5 EXC per person
+
+DIFFERENCE: 5X more for choosing salad over burger!
 ```
 
 ---
@@ -167,13 +215,35 @@ REST_STOP: {
   MIN_BONUS: 5,                // Minimum bonus amount
   MAX_BONUS: 25,               // Maximum bonus amount
 
+  // HEALTHY CHOICES = BIG BONUSES!
   VENUE_MULTIPLIERS: {
-    fast_food: 1.0,
-    cafe: 1.2,
-    restaurant: 1.5,
-    health_food: 2.0,
-    brewery: 1.3,
-    ice_cream: 1.1
+    // Healthy options (3.0x - 1.7x)
+    health_food: 3.0,
+    juice_bar: 2.8,
+    salad_bar: 2.5,
+    vegetarian: 2.5,
+    poke_bowl: 2.3,
+    acai: 2.3,
+    organic: 2.5,
+    mediterranean: 1.8,
+    sushi: 1.7,
+
+    // Moderate options (1.5x - 1.2x)
+    cafe: 1.5,
+    asian: 1.4,
+    restaurant: 1.3,
+    deli: 1.2,
+
+    // Less healthy (1.0x - 0.4x)
+    brewery: 1.0,
+    pizza: 0.8,
+    ice_cream: 0.7,
+    fast_food: 0.5,
+    burger: 0.5,
+    fried_chicken: 0.4,
+    donut: 0.4,
+
+    default: 0.8
   },
 
   COOLDOWN_HOURS: 4            // Hours between bonuses

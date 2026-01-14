@@ -6,10 +6,11 @@ const logger = require('../utils/logger');
 const { TOKENOMICS } = require('../config/tokenomics');
 
 /**
- * 🍔 Rest Stop Service
+ * 🥗 Rest Stop Service
  *
  * Detects when hiking friends stop at restaurants/cafes together
- * and awards bonus coins. "Cheers! Enjoy your meal!" 🥂
+ * and awards bonus coins. HEALTHY CHOICES = BIGGER BONUSES!
+ * 🥗 Salad > 🍔 Burger
  */
 class RestStopService {
   /**
@@ -107,9 +108,9 @@ class RestStopService {
         return { success: false, error: 'Your friend already received a rest stop bonus recently' };
       }
 
-      // Get venue type multiplier
-      const venueType = venueInfo?.type || 'other';
-      const venueMultiplier = config.VENUE_MULTIPLIERS[venueType] || 1.0;
+      // Get venue type multiplier - healthy choices get bigger bonuses!
+      const venueType = venueInfo?.type || 'default';
+      const venueMultiplier = config.VENUE_MULTIPLIERS[venueType] || config.VENUE_MULTIPLIERS.default || 0.8;
 
       // Calculate bonus
       const baseBonus = config.MIN_BONUS + Math.random() * (config.MAX_BONUS - config.MIN_BONUS);
@@ -238,47 +239,127 @@ class RestStopService {
 
   /**
    * Get a fun message based on venue type
+   * HEALTHY = Encouraging, UNHEALTHY = Gentle nudge
    */
   static getVenueMessage(venueType, venueName) {
     const messages = {
-      fast_food: [
-        `🍔 Cheers! Enjoy your meal at ${venueName || 'the restaurant'}!`,
-        `🍟 Fuel up! You've earned it after that hike!`,
-        `🥤 Refuel time! Great workout, now great food!`
+      // 🟢 HEALTHY OPTIONS - Celebrate!
+      health_food: [
+        `🥗 AMAZING CHOICE! Healthy food after exercise = TRIPLE POINTS! 💪`,
+        `🥗 YES! This is how champions refuel! Maximum bonus!`,
+        `🥗 Salad squad! Your body (and wallet) thanks you!`
       ],
+      juice_bar: [
+        `🧃 SMART! Fresh juice = Fresh gains! Big bonus!`,
+        `🍹 Liquid nutrition! Your muscles thank you!`,
+        `🥤 Smoothie boost! Keep those healthy choices coming!`
+      ],
+      salad_bar: [
+        `🥬 LEGENDARY CHOICE! Greens after gains = MAX BONUS!`,
+        `🥗 Salad over burger = HUGE bonus! Smart hikers!`,
+        `🥬 Your body is a temple! Excellent refuel choice!`
+      ],
+      vegetarian: [
+        `🌱 Plant-powered hikers! BIG bonus for healthy choices!`,
+        `🥦 Veggie power! Your body thanks you!`,
+        `🌿 Green eating = Green earning! Nice!`
+      ],
+      poke_bowl: [
+        `🐟 Poke perfection! Healthy AND delicious!`,
+        `🍣 Fresh fish fuel! Great choice for recovery!`,
+        `🥢 Bowl goals! Protein-packed and bonus-packed!`
+      ],
+      acai: [
+        `🫐 Acai bowl crew! Antioxidant bonus activated!`,
+        `🍇 Superfoods for super hikers! Big bonus!`,
+        `🫐 Berry good choice! Healthy hikers win!`
+      ],
+      organic: [
+        `🌱 Organic fuel! Premium choice = Premium bonus!`,
+        `🥗 Clean eating club! Your body thanks you!`,
+        `🌿 Organic goodness! This is the way!`
+      ],
+      mediterranean: [
+        `🫒 Mediterranean magic! Heart-healthy choice!`,
+        `🥙 Great choice! Olive oil and gains!`,
+        `🧆 Falafel fuel! Tasty and healthy!`
+      ],
+      sushi: [
+        `🍣 Sushi squad! Omega-3 bonus!`,
+        `🥢 Raw power! Great protein choice!`,
+        `🍱 Fish fuel! Your muscles approve!`
+      ],
+      asian: [
+        `🍜 Good balance of protein and veggies!`,
+        `🥡 Solid choice! Enjoy the refuel!`,
+        `🍲 Warm meal, warm bonus!`
+      ],
+
+      // 🟡 MODERATE OPTIONS
       cafe: [
-        `☕ Coffee break! You've earned this after hiking together!`,
-        `🧁 Treat yourselves! Nothing like post-hike coffee!`,
-        `☕ Cheers to hiking buddies and good coffee!`
+        `☕ Coffee break! Hydration bonus!`,
+        `☕ Caffeine earned! Cheers!`,
+        `🧋 Coffee fuel! Keep moving!`
       ],
       restaurant: [
-        `🍽️ Sit down and celebrate! You crushed that hike!`,
-        `🥂 Cheers to you and your hiking buddy!`,
-        `🍝 A proper meal for proper hikers! Enjoy!`
+        `🍽️ Sit-down meal! Choose wisely from the menu!`,
+        `🥂 Cheers to you! Hope you picked something healthy!`,
+        `🍽️ Enjoy! Maybe get that salad side?`
       ],
-      health_food: [
-        `🥗 Healthy choice! Your body thanks you!`,
-        `🥑 Smart refuel! Avocado everything!`,
-        `🥗 Healthy hikers, healthy food! Double bonus!`
+      deli: [
+        `🥪 Sandwich time! Load up on veggies!`,
+        `🥖 Deli stop! Choose whole grain!`,
+        `🥬 Get extra lettuce on that!`
       ],
+
+      // 🟠 TREAT YOURSELF - Smaller bonuses
       brewery: [
-        `🍺 Post-hike beers are the best beers! Cheers!`,
-        `🍻 You hiked, you earned it! Prost!`,
-        `🍺 Brewery stop approved! Enjoy responsibly!`
+        `🍺 Post-hike beer! You earned... a little bonus.`,
+        `🍻 Brewery stop! Next time try the salad place? 😉`,
+        `🍺 Cheers! But maybe grab some water too!`
+      ],
+      pizza: [
+        `🍕 Pizza... not our best work. Small bonus!`,
+        `🍕 Carb loading? There's a salad bar nearby... 😉`,
+        `🍕 Pizza bonus is... modest. Try veggies next time!`
       ],
       ice_cream: [
-        `🍦 Treat yourselves! You deserve it!`,
-        `🍨 Ice cream is always the answer!`,
-        `🍦 Sweet reward for sweet hikers!`
+        `🍦 Sweet treat! Tiny bonus though...`,
+        `🍨 Ice cream earned... barely! 😅`,
+        `🍦 Treat yourselves! (Next time try frozen yogurt?)`
       ],
-      other: [
+
+      // 🔴 LESS HEALTHY - Minimal bonuses with gentle nudges
+      fast_food: [
+        `🍔 Fast food... small bonus. Your body deserves better!`,
+        `🍟 Fries? After all that hiking? Tiny bonus!`,
+        `🍔 There's a salad place next door... just saying! 🥗`
+      ],
+      burger: [
+        `🍔 Burger bonus is... minimal. Salad next time?`,
+        `🍔 Your arteries called, they want veggies! Small bonus.`,
+        `🍔 Burger earned... but a salad would've been 3X! 🥗`
+      ],
+      fried_chicken: [
+        `🍗 Fried food = fried bonus. Very small!`,
+        `🍗 Your body worked hard... it deserves better fuel!`,
+        `🍗 Tiny bonus! Grilled chicken next time = 5X more!`
+      ],
+      donut: [
+        `🍩 Donuts after exercise? Minimal bonus!`,
+        `🍩 Sugar crash incoming... tiny bonus!`,
+        `🍩 Your workout > your food choice today! 😅`
+      ],
+
+      // Default
+      default: [
         `🍽️ Cheers! Enjoy your meal together!`,
-        `🥂 Great hike, great company! Enjoy!`,
+        `🥂 Great hike, great company!`,
         `🎉 Rest up! You've earned it!`
       ]
     };
 
-    const typeMessages = messages[venueType] || messages.other;
+    const typeMessages = messages[venueType] || messages.default;
     return typeMessages[Math.floor(Math.random() * typeMessages.length)];
   }
 

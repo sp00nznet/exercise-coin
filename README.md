@@ -177,14 +177,18 @@ When you're exercising with a friend and stop for a break together, you both ear
 🎉 "Cheers guys!" Both earn 5-25 EXC!
 ```
 
-**Venue Multipliers:**
-| Venue Type | Multiplier |
-|------------|------------|
-| 🍔 Fast Food | 1.0x |
-| ☕ Cafe | 1.2x |
-| 🍽️ Restaurant | 1.5x |
-| 🥗 Health Food | 2.0x (bonus for healthy eating!) |
-| 🍺 Brewery | 1.3x |
+**Venue Multipliers - Healthy Choices Win!**
+| Venue Type | Multiplier | Message |
+|------------|------------|---------|
+| 🥗 **Health Food** | 3.0x | "AMAZING CHOICE! Maximum bonus!" |
+| 🧃 **Juice Bar** | 2.8x | "Smart! Fresh juice = Fresh gains!" |
+| 🥬 **Salad Bar** | 2.5x | "Salad over burger = HUGE bonus!" |
+| 🫒 **Mediterranean** | 1.8x | "Heart-healthy choice!" |
+| ☕ **Cafe** | 1.5x | "Hydration bonus!" |
+| 🍺 **Brewery** | 1.0x | "You earned... a little bonus" |
+| 🍕 **Pizza** | 0.8x | "Small bonus... try veggies next!" |
+| 🍔 **Fast Food** | 0.5x | "Tiny bonus. Salad next time?" |
+| 🍗 **Fried Chicken** | 0.4x | "Very small! Grilled = 5X more!" |
 
 ---
 

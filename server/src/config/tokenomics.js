@@ -82,7 +82,8 @@ const TOKENOMICS = {
     }
   },
 
-  // 🍔 Rest Stop Bonus (Real-time detection)
+  // 🥗 Rest Stop Bonus (Real-time detection)
+  // PHILOSOPHY: Healthy choices = bigger rewards!
   REST_STOP: {
     ENABLED: true,
     MIN_EXERCISE_MINUTES: 15,             // Must have 15+ min of exercise first
@@ -94,14 +95,39 @@ const TOKENOMICS = {
     MIN_BONUS: 5,
     MAX_BONUS: 25,
 
-    // Venue type multipliers
+    // Venue type multipliers - HEALTHY CHOICES WIN!
+    // 🥗 Salad > 🍔 Burger
     VENUE_MULTIPLIERS: {
-      fast_food: 1.0,                     // Subway, McDonald's, etc.
-      cafe: 1.2,                          // Coffee shops
-      restaurant: 1.5,                    // Sit-down restaurants
-      health_food: 2.0,                   // Healthy eating bonus!
-      brewery: 1.3,                       // Post-hike beer!
-      ice_cream: 1.1                      // Treat yourself!
+      // 🟢 HEALTHY OPTIONS (Big bonuses!)
+      health_food: 3.0,                   // Whole Foods, salad bars = BEST!
+      juice_bar: 2.8,                     // Smoothies & fresh juice
+      salad_bar: 2.5,                     // Salad-focused spots
+      vegetarian: 2.5,                    // Veggie restaurants
+      poke_bowl: 2.3,                     // Healthy poke/bowl places
+      acai: 2.3,                          // Acai bowls
+      organic: 2.5,                       // Organic cafes
+
+      // 🟡 MODERATE OPTIONS (Decent bonuses)
+      cafe: 1.5,                          // Coffee shops (hydration!)
+      restaurant: 1.3,                    // Sit-down restaurants
+      deli: 1.2,                          // Delis (can be healthy)
+      asian: 1.4,                         // Often healthier options
+      mediterranean: 1.8,                 // Generally healthy cuisine
+      sushi: 1.7,                         // Fish is good for you!
+
+      // 🟠 TREAT YOURSELF (Small bonuses)
+      brewery: 1.0,                       // Post-hike beer (earned it!)
+      pizza: 0.8,                         // Pizza... not great
+      ice_cream: 0.7,                     // Treat, but low bonus
+
+      // 🔴 LESS HEALTHY (Minimal bonuses)
+      fast_food: 0.5,                     // McDonald's, Burger King
+      burger: 0.5,                        // Burger joints
+      fried_chicken: 0.4,                 // KFC, Popeyes
+      donut: 0.4,                         // Donut shops
+
+      // Default for unknown venues
+      default: 0.8
     },
 
     // Cooldown to prevent abuse
