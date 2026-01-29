@@ -3,18 +3,19 @@ default_platform(:android)
 platform :android do
   desc "Run ktlint and detekt"
   lane :lint do
-    gradle(task: "ktlintCheck detekt")
+    gradle(task: "ktlintCheck detekt", flags: "--no-daemon")
   end
 
   desc "Run unit tests"
   lane :test do
-    gradle(task: "testDebugUnitTest")
+    gradle(task: "testDebugUnitTest", flags: "--no-daemon")
   end
 
   desc "Build debug APK"
   lane :build_debug do
     gradle(
       task: "assembleDebug",
+      flags: "--no-daemon",
       print_command: true
     )
   end
@@ -23,9 +24,10 @@ platform :android do
   lane :build_release do
     gradle(
       task: "bundleRelease",
+      flags: "--no-daemon",
       print_command: true,
       properties: {
-        "android.injected.signing.store.file" => ENV["KEYSTORE_FILE"],
+        "android.injected.signing.store.file" => ENV["KEYSTORE_FILE"] || "release.keystore",
         "android.injected.signing.store.password" => ENV["KEYSTORE_PASSWORD"],
         "android.injected.signing.key.alias" => ENV["KEY_ALIAS"],
         "android.injected.signing.key.password" => ENV["KEY_PASSWORD"]
