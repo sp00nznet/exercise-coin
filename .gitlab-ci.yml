@@ -211,21 +211,20 @@ ios:deploy:appstore:
 #   - MAPS_API_KEY: Google Maps API key
 
 .android_base:
-  tags:
-    - android
   variables:
-    ANDROID_HOME: "${HOME}/android-sdk"
-    ANDROID_SDK_ROOT: "${HOME}/android-sdk"
+    ANDROID_HOME: "/tmp/android-sdk"
+    ANDROID_SDK_ROOT: "/tmp/android-sdk"
   cache:
     key: android-${CI_COMMIT_REF_SLUG}
     paths:
       - ExerciseCoin-Android/.gradle/
-      - ExerciseCoin-Android/build/
-      - ExerciseCoin-Android/app/build/
     policy: pull-push
   before_script:
+    - apt-get update && apt-get install -y openjdk-17-jdk curl unzip || true
+    - export JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64
+    - export PATH="$JAVA_HOME/bin:$PATH"
     - |
-      # Install Android SDK if not present
+      # Install Android SDK
       if [ ! -d "$ANDROID_HOME/cmdline-tools" ]; then
         mkdir -p $ANDROID_HOME/cmdline-tools
         curl -sL https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip -o /tmp/cmdline-tools.zip
@@ -234,15 +233,9 @@ ios:deploy:appstore:
         yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses > /dev/null 2>&1 || true
         $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager "platforms;android-34" "build-tools;34.0.0" "platform-tools"
       fi
-    - |
-      # Install Gradle if not present
-      if ! command -v gradle &> /dev/null; then
-        curl -sL https://services.gradle.org/distributions/gradle-8.4-bin.zip -o /tmp/gradle.zip
-        unzip -q /tmp/gradle.zip -d $HOME
-        export PATH="$HOME/gradle-8.4/bin:$PATH"
-      fi
-    - export PATH="$HOME/gradle-8.4/bin:$ANDROID_HOME/cmdline-tools/latest/bin:$ANDROID_HOME/platform-tools:$PATH"
+    - export PATH="$ANDROID_HOME/cmdline-tools/latest/bin:$ANDROID_HOME/platform-tools:$PATH"
     - cd ExerciseCoin-Android
+    - chmod +x ./gradlew
   rules:
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
     - if: $CI_COMMIT_TAG
@@ -253,7 +246,6 @@ android:lint:
   extends: .android_base
   stage: lint
   script:
-    - chmod +x ./gradlew
     - ./gradlew ktlintCheck detekt --no-daemon
   allow_failure: true
 
@@ -261,7 +253,6 @@ android:test:
   extends: .android_base
   stage: test
   script:
-    - chmod +x ./gradlew
     - ./gradlew testDebugUnitTest --no-daemon
   artifacts:
     reports:
@@ -272,7 +263,6 @@ android:build:debug:
   extends: .android_base
   stage: build
   script:
-    - chmod +x ./gradlew
     - ./gradlew assembleDebug --no-daemon
   artifacts:
     paths:
@@ -286,7 +276,6 @@ android:build:release:
   extends: .android_base
   stage: build
   script:
-    - chmod +x ./gradlew
     - echo "$ANDROID_KEYSTORE_BASE64" | base64 -d > app/release.keystore
     - |
       ./gradlew bundleRelease --no-daemon \
