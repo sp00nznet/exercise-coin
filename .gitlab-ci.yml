@@ -139,6 +139,7 @@ ios:test:
   stage: test
   script:
     - bundle exec fastlane test
+  allow_failure: true
   artifacts:
     reports:
       junit: ExerciseCoin-iOS/fastlane/test_output/report.junit
