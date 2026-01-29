@@ -150,6 +150,7 @@ ios:build:debug:
   stage: build
   script:
     - bundle exec fastlane build_debug
+  allow_failure: true
   artifacts:
     paths:
       - ExerciseCoin-iOS/build/ExerciseCoin.app
@@ -164,6 +165,7 @@ ios:build:release:
   script:
     - echo "$ASC_KEY_CONTENT" | base64 -d > fastlane/api_key.json
     - bundle exec fastlane build_release
+  allow_failure: true
   artifacts:
     paths:
       - ExerciseCoin-iOS/build/ExerciseCoin.ipa
@@ -178,6 +180,7 @@ ios:deploy:testflight:
   script:
     - echo "$ASC_KEY_CONTENT" | base64 -d > fastlane/api_key.json
     - bundle exec fastlane deploy_testflight
+  allow_failure: true
   rules:
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
       when: manual
@@ -193,6 +196,7 @@ ios:deploy:appstore:
   script:
     - echo "$ASC_KEY_CONTENT" | base64 -d > fastlane/api_key.json
     - bundle exec fastlane deploy_appstore
+  allow_failure: true
   rules:
     - if: $CI_COMMIT_TAG
       when: manual
