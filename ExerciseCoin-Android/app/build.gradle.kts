@@ -3,6 +3,8 @@ plugins {
     id("org.jetbrains.kotlin.android")
     id("com.google.dagger.hilt.android")
     id("org.jetbrains.kotlin.plugin.serialization")
+    id("org.jlleitschuh.gradle.ktlint")
+    id("io.gitlab.arturbosch.detekt")
     kotlin("kapt")
 }
 
@@ -150,4 +152,15 @@ dependencies {
 
 kapt {
     correctErrorTypes = true
+}
+
+ktlint {
+    android.set(true)
+    ignoreFailures.set(true)
+}
+
+detekt {
+    buildUponDefaultConfig = true
+    allRules = false
+    ignoreFailures = true
 }
