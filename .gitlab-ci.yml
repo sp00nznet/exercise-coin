@@ -211,6 +211,8 @@ ios:deploy:appstore:
 #   - MAPS_API_KEY: Google Maps API key
 
 .android_base:
+  tags:
+    - linux
   cache:
     key: android-${CI_COMMIT_REF_SLUG}
     paths:
