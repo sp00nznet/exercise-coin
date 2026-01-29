@@ -1,0 +1,87 @@
+stages:
+  - install
+  - lint
+  - test
+  - build
+
+variables:
+  NODE_VERSION: "18"
+
+default:
+  image: node:${NODE_VERSION}
+  cache:
+    key: ${CI_COMMIT_REF_SLUG}
+    paths:
+      - node_modules/
+      - server/node_modules/
+      - mobile-app/node_modules/
+      - admin-portal/node_modules/
+      - exchange/node_modules/
+
+# Install dependencies for all workspaces
+install:
+  stage: install
+  script:
+    - npm ci
+    - cd admin-portal && npm ci
+    - cd ../exchange && npm ci
+  artifacts:
+    paths:
+      - node_modules/
+      - server/node_modules/
+      - mobile-app/node_modules/
+      - admin-portal/node_modules/
+      - exchange/node_modules/
+    expire_in: 1 hour
+
+# Server jobs
+server:lint:
+  stage: lint
+  needs: [install]
+  script:
+    - cd server && npm run lint
+  allow_failure: true
+
+server:test:
+  stage: test
+  needs: [install]
+  script:
+    - cd server && npm test
+  allow_failure: true
+
+# Admin Portal jobs
+admin-portal:build:
+  stage: build
+  needs: [install]
+  script:
+    - cd admin-portal && npm run build
+  artifacts:
+    paths:
+      - admin-portal/dist/
+    expire_in: 1 week
+
+# Exchange jobs
+exchange:build:
+  stage: build
+  needs: [install]
+  script:
+    - cd exchange && npm run build
+  artifacts:
+    paths:
+      - exchange/dist/
+    expire_in: 1 week
+
+# Mobile App jobs
+mobile-app:lint:
+  stage: lint
+  needs: [install]
+  script:
+    - cd mobile-app && npm run lint
+  allow_failure: true
+
+mobile-app:test:
+  stage: test
+  needs: [install]
+  script:
+    - cd mobile-app && npm test
+  allow_failure: true
