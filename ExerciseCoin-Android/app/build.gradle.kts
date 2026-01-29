@@ -43,10 +43,12 @@ android {
                 "proguard-rules.pro"
             )
             signingConfig = signingConfigs.getByName("release")
+            manifestPlaceholders["MAPS_API_KEY"] = System.getenv("MAPS_API_KEY") ?: ""
         }
         debug {
             isDebuggable = true
             applicationIdSuffix = ".debug"
+            manifestPlaceholders["MAPS_API_KEY"] = System.getenv("MAPS_API_KEY") ?: "DEBUG_MAPS_KEY"
         }
     }
 
