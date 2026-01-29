@@ -20,7 +20,8 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/platform-iOS%20%7C%20Android-blue?style=for-the-badge" alt="Platform" />
+  <img src="https://img.shields.io/badge/iOS-Swift%20%7C%20SwiftUI-orange?style=for-the-badge&logo=swift" alt="iOS" />
+  <img src="https://img.shields.io/badge/Android-Kotlin%20%7C%20Compose-green?style=for-the-badge&logo=android" alt="Android" />
   <img src="https://img.shields.io/badge/node-%3E%3D18.0.0-brightgreen?style=for-the-badge" alt="Node Version" />
   <img src="https://img.shields.io/badge/license-MIT-green?style=for-the-badge" alt="License" />
 </p>
@@ -55,15 +56,15 @@
 <tr>
 <td width="50%" valign="top">
 
-### 📱 Mobile App
+### 📱 Native Mobile Apps
 | Feature | Description |
 |---------|-------------|
-| 👟 **Step Tracking** | Real-time pedometer integration |
-| 📊 **Live Stats** | Watch your progress as you move |
+| 👟 **Step Tracking** | Native pedometer (CMPedometer / SensorManager) |
+| 📊 **Live Stats** | Real-time progress with background tracking |
 | 💰 **Wallet** | View balance & transaction history |
 | 🏆 **Achievements** | Unlock badges & milestones |
-| 📍 **Treasure Map** | Find & drop coins in the real world |
-| 🤝 **Send Coins** | Transfer to friends via username or QR |
+| 📍 **Treasure Map** | MapKit (iOS) / Google Maps (Android) |
+| 🤝 **Send Coins** | QR codes via AVFoundation / CameraX |
 
 </td>
 <td width="50%" valign="top">
@@ -81,6 +82,81 @@
 </td>
 </tr>
 </table>
+
+---
+
+## 📱 Native Mobile Apps
+
+Exercise Coin features fully native mobile apps built with modern technologies for optimal performance and user experience.
+
+### Platform Comparison
+
+| Feature | iOS (Swift/SwiftUI) | Android (Kotlin/Compose) |
+|---------|---------------------|--------------------------|
+| **Step Counting** | CMPedometer (CoreMotion) | SensorManager + ForegroundService |
+| **Secure Storage** | Keychain Services | EncryptedSharedPreferences |
+| **Maps** | MapKit | Google Maps Compose |
+| **QR Scanning** | AVFoundation | CameraX + ML Kit |
+| **QR Generation** | CoreImage | ZXing |
+| **Location** | CLLocationManager | FusedLocationProviderClient |
+| **Background Tracking** | Background Modes | Foreground Service |
+
+### iOS App Architecture
+
+```
+ExerciseCoin-iOS/
+├── App/                    # App entry point, ContentView
+├── Core/
+│   ├── Network/           # URLSession-based API client
+│   ├── Storage/           # Keychain for JWT tokens
+│   └── Services/          # CMPedometer, CLLocationManager
+├── Features/              # SwiftUI views + ViewModels
+│   ├── Auth/              # Login, Register
+│   ├── Home/              # Dashboard
+│   ├── Exercise/          # Step tracking sessions
+│   ├── Wallet/            # Balance, transactions
+│   ├── TreasureMap/       # MapKit integration
+│   ├── SendReceive/       # QR codes, transfers
+│   ├── Achievements/      # Progress tracking
+│   └── Profile/           # Settings, leaderboard
+├── Navigation/            # Tab-based navigation
+└── SharedUI/              # Theme, reusable components
+```
+
+### Android App Architecture
+
+```
+ExerciseCoin-Android/
+├── core/
+│   ├── network/           # Retrofit + OkHttp
+│   ├── storage/           # EncryptedSharedPreferences
+│   └── services/          # ForegroundService for steps
+├── di/                    # Hilt dependency injection
+├── features/              # Compose screens + ViewModels
+│   ├── auth/              # Login, Register
+│   ├── home/              # Dashboard
+│   ├── exercise/          # Step tracking sessions
+│   ├── wallet/            # Balance, transactions
+│   ├── treasure/          # Google Maps integration
+│   ├── transfer/          # QR codes, P2P
+│   ├── achievements/      # Progress tracking
+│   └── profile/           # Settings, leaderboard
+├── navigation/            # Compose Navigation
+└── ui/                    # Material 3 theme, components
+```
+
+### Required Permissions
+
+**iOS (Info.plist):**
+- `NSMotionUsageDescription` - Step counting
+- `NSLocationWhenInUseUsageDescription` - Treasure map
+- `NSCameraUsageDescription` - QR scanning
+
+**Android (AndroidManifest.xml):**
+- `ACTIVITY_RECOGNITION` - Step counting
+- `FOREGROUND_SERVICE` + `FOREGROUND_SERVICE_HEALTH` - Background tracking
+- `ACCESS_FINE_LOCATION` - Treasure map
+- `CAMERA` - QR scanning
 
 ---
 
@@ -332,7 +408,55 @@ npm run dev
 </details>
 
 <details>
-<summary><strong>📱 Mobile App Setup</strong></summary>
+<summary><strong>🍎 iOS App Setup</strong></summary>
+
+```bash
+cd ExerciseCoin-iOS
+
+# Install dependencies
+bundle install
+
+# Open in Xcode
+open ExerciseCoin.xcodeproj
+
+# Build and run
+# - Select target device/simulator
+# - Press Cmd+R to build and run
+```
+
+**Requirements:**
+- Xcode 15+
+- iOS 17.0+ deployment target
+- CocoaPods or Swift Package Manager
+
+</details>
+
+<details>
+<summary><strong>🤖 Android App Setup</strong></summary>
+
+```bash
+cd ExerciseCoin-Android
+
+# Build debug APK
+./gradlew assembleDebug
+
+# Install on connected device
+./gradlew installDebug
+
+# Or open in Android Studio
+# - File > Open > Select ExerciseCoin-Android folder
+```
+
+**Requirements:**
+- Android Studio Hedgehog+
+- JDK 17
+- Android SDK 34
+- Min SDK 26 (Android 8.0)
+
+</details>
+
+<details>
+<summary><strong>📱 React Native App (Deprecated)</strong></summary>
 
 ```bash
 cd mobile-app
@@ -340,6 +464,8 @@ npm install
 npm start
 # Scan QR code with Expo Go app
 ```
+
+> ⚠️ The React Native app is deprecated. Use the native iOS/Android apps instead.
 
 </details>
 
@@ -404,7 +530,33 @@ Exercise Coin uses unique network parameters based on F7CoinV4:
 ```
 exercise-coin/
 │
-├── 📱 mobile-app/           # React Native (Expo) application
+├── 🍎 ExerciseCoin-iOS/     # Native iOS app (Swift/SwiftUI)
+│   └── ExerciseCoin/
+│       ├── App/             # App entry, ContentView
+│       ├── Core/
+│       │   ├── Network/     # APIClient, Endpoints
+│       │   ├── Storage/     # KeychainManager
+│       │   └── Services/    # StepCountingService, LocationService
+│       ├── Features/        # Auth, Home, Exercise, Wallet, etc.
+│       ├── Navigation/      # MainTabView, routing
+│       └── SharedUI/        # Theme, reusable components
+│
+├── 🤖 ExerciseCoin-Android/ # Native Android app (Kotlin/Compose)
+│   └── app/src/main/java/com/exercisecoin/
+│       ├── core/
+│       │   ├── network/     # Retrofit, AuthInterceptor
+│       │   ├── storage/     # EncryptedSharedPreferences
+│       │   └── services/    # StepCountingService (Foreground)
+│       ├── di/              # Hilt modules
+│       ├── features/        # auth, home, exercise, wallet, etc.
+│       ├── navigation/      # Compose Navigation
+│       └── ui/              # Theme, components
+│
+├── 📋 shared/               # Shared assets & specifications
+│   ├── api-spec.yaml        # OpenAPI 3.0 specification
+│   └── design-tokens.json   # Design system (colors, spacing, typography)
+│
+├── 📱 mobile-app/           # React Native (Expo) - DEPRECATED
 │   └── src/
 │       ├── screens/         # App screens
 │       ├── hooks/           # Custom React hooks
@@ -448,8 +600,11 @@ exercise-coin/
 |----------|-------------|
 | 📖 [Getting Started](docs/getting-started.md) | Complete setup guide |
 | 🔌 [API Reference](docs/api-reference.md) | Full API documentation |
+| 📋 [API Specification](shared/api-spec.yaml) | OpenAPI 3.0 spec |
+| 🎨 [Design Tokens](shared/design-tokens.json) | Shared design system |
 | 🏗️ [Architecture](docs/architecture.md) | System design overview |
-| 📱 [Mobile App Guide](docs/mobile-app.md) | Mobile development guide |
+| 🍎 [iOS Development](ExerciseCoin-iOS/README.md) | iOS app guide |
+| 🤖 [Android Development](ExerciseCoin-Android/README.md) | Android app guide |
 | ⛏️ [Coin Daemon](docs/coin-daemon.md) | Blockchain setup & config |
 | 🚀 [Deployment](docs/deployment.md) | Production deployment |
 | 🗺️ [Treasure System](docs/treasure-system.md) | Geo-drops & treasure hunting |
@@ -460,6 +615,43 @@ exercise-coin/
 | 💱 [Exchange](docs/exchange.md) | Trading platform guide |
 | 🍔 [Rest Stop Bonus](docs/rest-stop-bonus.md) | Break time bonuses |
 | 🎰 [Tokenomics](docs/tokenomics.md) | Economic system details |
+
+## 🔄 CI/CD Pipeline
+
+The project uses GitLab CI/CD with Fastlane for automated builds and deployments.
+
+### iOS Pipeline
+
+| Job | Stage | Description |
+|-----|-------|-------------|
+| `ios:lint` | lint | SwiftLint code analysis |
+| `ios:test` | test | XCTest unit tests |
+| `ios:build:debug` | build | Development build |
+| `ios:build:release` | build | App Store build (.ipa) |
+| `ios:deploy:testflight` | deploy | TestFlight distribution |
+| `ios:deploy:appstore` | deploy | App Store submission |
+
+### Android Pipeline
+
+| Job | Stage | Description |
+|-----|-------|-------------|
+| `android:lint` | lint | ktlint + detekt |
+| `android:test` | test | JUnit unit tests |
+| `android:build:debug` | build | Debug APK |
+| `android:build:release` | build | Signed AAB |
+| `android:deploy:internal` | deploy | Play Store internal track |
+| `android:deploy:production` | deploy | Play Store production |
+
+### Required CI Variables
+
+**iOS:**
+- `MATCH_PASSWORD` - Certificate encryption
+- `ASC_KEY_ID`, `ASC_ISSUER_ID`, `ASC_KEY_CONTENT` - App Store Connect API
+
+**Android:**
+- `ANDROID_KEYSTORE_BASE64` - Signing keystore
+- `KEYSTORE_PASSWORD`, `KEY_ALIAS`, `KEY_PASSWORD` - Keystore credentials
+- `PLAY_STORE_JSON_KEY` - Service account for Play Store
 
 ---
 
@@ -508,29 +700,37 @@ To earn rewards, your exercise must meet these criteria:
 
 <table>
 <tr>
-<td align="center" width="25%">
-<strong>📱 Mobile</strong><br>
-React Native<br>
-Expo<br>
-Zustand
+<td align="center" width="20%">
+<strong>🍎 iOS</strong><br>
+Swift 5.9<br>
+SwiftUI<br>
+CoreMotion<br>
+MapKit
 </td>
-<td align="center" width="25%">
+<td align="center" width="20%">
+<strong>🤖 Android</strong><br>
+Kotlin 1.9<br>
+Jetpack Compose<br>
+Hilt DI<br>
+Google Maps
+</td>
+<td align="center" width="20%">
 <strong>🖥️ Backend</strong><br>
 Node.js<br>
 Express<br>
 MongoDB
 </td>
-<td align="center" width="25%">
+<td align="center" width="20%">
 <strong>⛏️ Blockchain</strong><br>
 F7CoinV4 Fork<br>
 Bitcoin Core<br>
 Custom Genesis
 </td>
-<td align="center" width="25%">
+<td align="center" width="20%">
 <strong>🐳 Infrastructure</strong><br>
 Docker<br>
-Docker Compose<br>
-Nginx
+GitLab CI/CD<br>
+Fastlane
 </td>
 </tr>
 </table>

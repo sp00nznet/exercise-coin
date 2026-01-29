@@ -1,0 +1,11 @@
+git_url(ENV["MATCH_GIT_URL"] || "git@github.com:exercisecoin/certificates.git")
+
+storage_mode("git")
+
+type("appstore")
+
+app_identifier(["com.exercisecoin.app"])
+
+username(ENV["APPLE_ID"] || "developer@exercisecoin.app")
+
+team_id(ENV["TEAM_ID"])

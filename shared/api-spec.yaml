@@ -1,0 +1,1026 @@
+openapi: 3.0.3
+info:
+  title: ExerciseCoin API
+  description: API for the ExerciseCoin fitness-to-earn platform
+  version: 1.0.0
+  contact:
+    name: ExerciseCoin Team
+
+servers:
+  - url: http://localhost:3000/api
+    description: Development server
+  - url: https://api.exercisecoin.app/api
+    description: Production server
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+        username:
+          type: string
+        email:
+          type: string
+        walletAddress:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+
+    AuthResponse:
+      type: object
+      properties:
+        token:
+          type: string
+        user:
+          $ref: '#/components/schemas/User'
+
+    ExerciseSession:
+      type: object
+      properties:
+        id:
+          type: string
+        userId:
+          type: string
+        startTime:
+          type: string
+          format: date-time
+        endTime:
+          type: string
+          format: date-time
+        totalSteps:
+          type: integer
+        totalCoinsEarned:
+          type: number
+        status:
+          type: string
+          enum: [active, completed, cancelled]
+
+    StepData:
+      type: object
+      properties:
+        timestamp:
+          type: string
+          format: date-time
+        stepCount:
+          type: integer
+        stepsPerSecond:
+          type: number
+
+    WalletBalance:
+      type: object
+      properties:
+        balance:
+          type: number
+        pendingBalance:
+          type: number
+        walletAddress:
+          type: string
+
+    Transaction:
+      type: object
+      properties:
+        id:
+          type: string
+        type:
+          type: string
+          enum: [exercise_reward, transfer_in, transfer_out, treasure_drop, treasure_collect]
+        amount:
+          type: number
+        timestamp:
+          type: string
+          format: date-time
+        description:
+          type: string
+
+    Achievement:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+        icon:
+          type: string
+        reward:
+          type: number
+        progress:
+          type: number
+        target:
+          type: number
+        unlockedAt:
+          type: string
+          format: date-time
+
+    TreasureDrop:
+      type: object
+      properties:
+        id:
+          type: string
+        latitude:
+          type: number
+        longitude:
+          type: number
+        amount:
+          type: number
+        rarity:
+          type: string
+          enum: [common, rare, epic, legendary]
+        expiresAt:
+          type: string
+          format: date-time
+        distance:
+          type: number
+
+    QRTransfer:
+      type: object
+      properties:
+        id:
+          type: string
+        amount:
+          type: number
+        code:
+          type: string
+        expiresAt:
+          type: string
+          format: date-time
+        status:
+          type: string
+          enum: [pending, claimed, cancelled, expired]
+
+    LeaderboardEntry:
+      type: object
+      properties:
+        rank:
+          type: integer
+        username:
+          type: string
+        totalSteps:
+          type: integer
+        totalCoins:
+          type: number
+
+    DaemonStatus:
+      type: object
+      properties:
+        isRunning:
+          type: boolean
+        miningRate:
+          type: number
+        uptime:
+          type: integer
+
+    Dashboard:
+      type: object
+      properties:
+        balance:
+          type: number
+        todaySteps:
+          type: integer
+        todayCoins:
+          type: number
+        activeSessions:
+          type: integer
+        recentAchievements:
+          type: array
+          items:
+            $ref: '#/components/schemas/Achievement'
+
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+        message:
+          type: string
+
+paths:
+  # Authentication
+  /auth/register:
+    post:
+      tags: [Authentication]
+      summary: Register a new user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [username, email, password]
+              properties:
+                username:
+                  type: string
+                  minLength: 3
+                  maxLength: 30
+                email:
+                  type: string
+                  format: email
+                password:
+                  type: string
+                  minLength: 8
+      responses:
+        '201':
+          description: User registered successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /auth/login:
+    post:
+      tags: [Authentication]
+      summary: Login user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password]
+              properties:
+                email:
+                  type: string
+                  format: email
+                password:
+                  type: string
+      responses:
+        '200':
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        '401':
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /auth/profile:
+    get:
+      tags: [Authentication]
+      summary: Get current user profile
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: User profile
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '401':
+          description: Unauthorized
+
+  /auth/logout:
+    post:
+      tags: [Authentication]
+      summary: Logout user
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Logged out successfully
+
+  # Exercise
+  /exercise/session/start:
+    post:
+      tags: [Exercise]
+      summary: Start a new exercise session
+      security:
+        - bearerAuth: []
+      responses:
+        '201':
+          description: Session started
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExerciseSession'
+
+  /exercise/session/steps:
+    post:
+      tags: [Exercise]
+      summary: Record step data for current session
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                sessionId:
+                  type: string
+                stepData:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/StepData'
+      responses:
+        '200':
+          description: Steps recorded
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  totalSteps:
+                    type: integer
+                  coinsEarned:
+                    type: number
+
+  /exercise/session/end:
+    post:
+      tags: [Exercise]
+      summary: End current exercise session
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                sessionId:
+                  type: string
+      responses:
+        '200':
+          description: Session ended
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExerciseSession'
+
+  /exercise/sessions:
+    get:
+      tags: [Exercise]
+      summary: Get exercise session history
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+      responses:
+        '200':
+          description: Session list
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  sessions:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ExerciseSession'
+                  total:
+                    type: integer
+                  page:
+                    type: integer
+                  totalPages:
+                    type: integer
+
+  /exercise/session/{sessionId}:
+    get:
+      tags: [Exercise]
+      summary: Get specific session details
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: sessionId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Session details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExerciseSession'
+
+  /exercise/stats:
+    get:
+      tags: [Exercise]
+      summary: Get exercise statistics
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Exercise stats
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  totalSessions:
+                    type: integer
+                  totalSteps:
+                    type: integer
+                  totalCoinsEarned:
+                    type: number
+                  averageStepsPerSession:
+                    type: number
+                  streakDays:
+                    type: integer
+
+  # Wallet
+  /wallet/balance:
+    get:
+      tags: [Wallet]
+      summary: Get wallet balance
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Wallet balance
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WalletBalance'
+
+  /wallet/address:
+    get:
+      tags: [Wallet]
+      summary: Get wallet address
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Wallet address
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  address:
+                    type: string
+
+  /wallet/transactions:
+    get:
+      tags: [Wallet]
+      summary: Get transaction history
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+        - name: type
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Transaction list
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  transactions:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Transaction'
+                  total:
+                    type: integer
+
+  /wallet/daemon/status:
+    get:
+      tags: [Wallet]
+      summary: Get daemon status
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Daemon status
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DaemonStatus'
+
+  /wallet/daemon/start:
+    post:
+      tags: [Wallet]
+      summary: Start mining daemon
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Daemon started
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DaemonStatus'
+
+  /wallet/earnings:
+    get:
+      tags: [Wallet]
+      summary: Get earnings history
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Earnings history
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  earnings:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        date:
+                          type: string
+                          format: date
+                        amount:
+                          type: number
+                        source:
+                          type: string
+
+  # User
+  /user/dashboard:
+    get:
+      tags: [User]
+      summary: Get user dashboard data
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Dashboard data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Dashboard'
+
+  /user/profile:
+    put:
+      tags: [User]
+      summary: Update user profile
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                email:
+                  type: string
+      responses:
+        '200':
+          description: Profile updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+
+  /user/password:
+    put:
+      tags: [User]
+      summary: Change password
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [currentPassword, newPassword]
+              properties:
+                currentPassword:
+                  type: string
+                newPassword:
+                  type: string
+                  minLength: 8
+      responses:
+        '200':
+          description: Password changed
+
+  /user/leaderboard:
+    get:
+      tags: [User]
+      summary: Get leaderboard
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: period
+          in: query
+          schema:
+            type: string
+            enum: [daily, weekly, monthly, alltime]
+            default: weekly
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 50
+      responses:
+        '200':
+          description: Leaderboard data
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  leaderboard:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/LeaderboardEntry'
+                  userRank:
+                    type: integer
+
+  # Achievements
+  /achievements:
+    get:
+      tags: [Achievements]
+      summary: List all achievements
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Achievement list
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  achievements:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Achievement'
+
+  /achievements/check:
+    post:
+      tags: [Achievements]
+      summary: Check for new achievements
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Achievement check result
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  newAchievements:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Achievement'
+
+  /achievements/new:
+    get:
+      tags: [Achievements]
+      summary: Get newly unlocked achievements
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: New achievements
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  achievements:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Achievement'
+
+  # Treasure
+  /treasure/drop:
+    post:
+      tags: [Treasure]
+      summary: Drop coins at location
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [latitude, longitude, amount]
+              properties:
+                latitude:
+                  type: number
+                longitude:
+                  type: number
+                amount:
+                  type: number
+                  minimum: 1
+                message:
+                  type: string
+      responses:
+        '201':
+          description: Treasure dropped
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TreasureDrop'
+
+  /treasure/nearby:
+    get:
+      tags: [Treasure]
+      summary: Find nearby treasure drops
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: latitude
+          in: query
+          required: true
+          schema:
+            type: number
+        - name: longitude
+          in: query
+          required: true
+          schema:
+            type: number
+        - name: radius
+          in: query
+          schema:
+            type: number
+            default: 1000
+      responses:
+        '200':
+          description: Nearby drops
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  drops:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/TreasureDrop'
+
+  /treasure/collect:
+    post:
+      tags: [Treasure]
+      summary: Collect treasure drop
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [dropId, latitude, longitude]
+              properties:
+                dropId:
+                  type: string
+                latitude:
+                  type: number
+                longitude:
+                  type: number
+      responses:
+        '200':
+          description: Treasure collected
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  amount:
+                    type: number
+                  newBalance:
+                    type: number
+
+  /treasure/history:
+    get:
+      tags: [Treasure]
+      summary: Get treasure history
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Treasure history
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  drops:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/TreasureDrop'
+                  collections:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/TreasureDrop'
+
+  # Transfers
+  /transfer/send:
+    post:
+      tags: [Transfers]
+      summary: Send coins to user
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [recipient, amount]
+              properties:
+                recipient:
+                  type: string
+                  description: Username or wallet address
+                amount:
+                  type: number
+                  minimum: 0.01
+                message:
+                  type: string
+      responses:
+        '200':
+          description: Transfer sent
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  transactionId:
+                    type: string
+                  newBalance:
+                    type: number
+
+  /transfer/qr/create:
+    post:
+      tags: [Transfers]
+      summary: Create QR transfer
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [amount]
+              properties:
+                amount:
+                  type: number
+                  minimum: 0.01
+                expiresInMinutes:
+                  type: integer
+                  default: 30
+      responses:
+        '201':
+          description: QR transfer created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QRTransfer'
+
+  /transfer/qr/claim:
+    post:
+      tags: [Transfers]
+      summary: Claim QR transfer
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [code]
+              properties:
+                code:
+                  type: string
+      responses:
+        '200':
+          description: Transfer claimed
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  amount:
+                    type: number
+                  newBalance:
+                    type: number
+                  sender:
+                    type: string
+
+  /transfer/qr/{transferId}:
+    delete:
+      tags: [Transfers]
+      summary: Cancel QR transfer
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: transferId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Transfer cancelled
+
+  /transfer/pending:
+    get:
+      tags: [Transfers]
+      summary: Get pending transfers
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Pending transfers
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  transfers:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/QRTransfer'
+
+  /transfer/history:
+    get:
+      tags: [Transfers]
+      summary: Get transfer history
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+      responses:
+        '200':
+          description: Transfer history
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  transfers:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                        type:
+                          type: string
+                          enum: [sent, received]
+                        amount:
+                          type: number
+                        otherParty:
+                          type: string
+                        timestamp:
+                          type: string
+                          format: date-time
+                  total:
+                    type: integer

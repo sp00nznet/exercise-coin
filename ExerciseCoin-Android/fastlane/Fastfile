@@ -1,0 +1,82 @@
+default_platform(:android)
+
+platform :android do
+  desc "Run ktlint and detekt"
+  lane :lint do
+    gradle(task: "ktlintCheck detekt")
+  end
+
+  desc "Run unit tests"
+  lane :test do
+    gradle(task: "testDebugUnitTest")
+  end
+
+  desc "Build debug APK"
+  lane :build_debug do
+    gradle(
+      task: "assembleDebug",
+      print_command: true
+    )
+  end
+
+  desc "Build release AAB"
+  lane :build_release do
+    gradle(
+      task: "bundleRelease",
+      print_command: true,
+      properties: {
+        "android.injected.signing.store.file" => ENV["KEYSTORE_FILE"],
+        "android.injected.signing.store.password" => ENV["KEYSTORE_PASSWORD"],
+        "android.injected.signing.key.alias" => ENV["KEY_ALIAS"],
+        "android.injected.signing.key.password" => ENV["KEY_PASSWORD"]
+      }
+    )
+  end
+
+  desc "Build release APK"
+  lane :build_release_apk do
+    gradle(
+      task: "assembleRelease",
+      print_command: true,
+      properties: {
+        "android.injected.signing.store.file" => ENV["KEYSTORE_FILE"],
+        "android.injected.signing.store.password" => ENV["KEYSTORE_PASSWORD"],
+        "android.injected.signing.key.alias" => ENV["KEY_ALIAS"],
+        "android.injected.signing.key.password" => ENV["KEY_PASSWORD"]
+      }
+    )
+  end
+
+  desc "Deploy to Play Store internal track"
+  lane :deploy_internal do
+    build_release
+
+    upload_to_play_store(
+      track: "internal",
+      aab: "app/build/outputs/bundle/release/app-release.aab",
+      json_key: ENV["PLAY_STORE_JSON_KEY_PATH"],
+      skip_upload_metadata: true,
+      skip_upload_images: true,
+      skip_upload_screenshots: true
+    )
+  end
+
+  desc "Deploy to Play Store production"
+  lane :deploy_production do
+    build_release
+
+    upload_to_play_store(
+      track: "production",
+      aab: "app/build/outputs/bundle/release/app-release.aab",
+      json_key: ENV["PLAY_STORE_JSON_KEY_PATH"]
+    )
+  end
+
+  desc "Increment version code"
+  lane :increment_version do
+    android_set_version_code(
+      gradle_file: "app/build.gradle.kts",
+      version_code: ENV["CI_PIPELINE_IID"].to_i
+    )
+  end
+end

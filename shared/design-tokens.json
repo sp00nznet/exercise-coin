@@ -1,0 +1,242 @@
+{
+  "colors": {
+    "primary": {
+      "value": "#1a1a2e",
+      "description": "Dark navy - main background"
+    },
+    "secondary": {
+      "value": "#16213e",
+      "description": "Darker navy - cards and surfaces"
+    },
+    "accent": {
+      "value": "#e94560",
+      "description": "Burgundy/pink - primary action color"
+    },
+    "background": {
+      "value": "#0f0f23",
+      "description": "Deep dark - root background"
+    },
+    "surface": {
+      "value": "#1a1a2e",
+      "description": "Surface color for cards"
+    },
+    "surfaceVariant": {
+      "value": "#252547",
+      "description": "Elevated surface color"
+    },
+    "text": {
+      "primary": {
+        "value": "#ffffff",
+        "description": "Primary text color"
+      },
+      "secondary": {
+        "value": "#a0a0b0",
+        "description": "Secondary/muted text"
+      },
+      "disabled": {
+        "value": "#606070",
+        "description": "Disabled text"
+      }
+    },
+    "status": {
+      "success": {
+        "value": "#4ade80",
+        "description": "Success green"
+      },
+      "warning": {
+        "value": "#fbbf24",
+        "description": "Warning yellow"
+      },
+      "error": {
+        "value": "#ef4444",
+        "description": "Error red"
+      },
+      "info": {
+        "value": "#60a5fa",
+        "description": "Info blue"
+      }
+    },
+    "coin": {
+      "value": "#ffd700",
+      "description": "Gold color for coins"
+    },
+    "rarity": {
+      "common": {
+        "value": "#9ca3af",
+        "description": "Common item gray"
+      },
+      "rare": {
+        "value": "#3b82f6",
+        "description": "Rare item blue"
+      },
+      "epic": {
+        "value": "#a855f7",
+        "description": "Epic item purple"
+      },
+      "legendary": {
+        "value": "#f59e0b",
+        "description": "Legendary item gold"
+      }
+    }
+  },
+  "spacing": {
+    "xs": 4,
+    "sm": 8,
+    "md": 16,
+    "lg": 24,
+    "xl": 32,
+    "xxl": 48
+  },
+  "borderRadius": {
+    "sm": 4,
+    "md": 8,
+    "lg": 12,
+    "xl": 16,
+    "full": 9999
+  },
+  "typography": {
+    "fontFamily": {
+      "ios": "-apple-system, SF Pro Display, SF Pro Text",
+      "android": "Roboto"
+    },
+    "fontSize": {
+      "xs": 10,
+      "sm": 12,
+      "md": 14,
+      "lg": 16,
+      "xl": 18,
+      "xxl": 24,
+      "display": 32,
+      "hero": 48
+    },
+    "fontWeight": {
+      "regular": "400",
+      "medium": "500",
+      "semibold": "600",
+      "bold": "700"
+    },
+    "lineHeight": {
+      "tight": 1.2,
+      "normal": 1.5,
+      "relaxed": 1.75
+    }
+  },
+  "shadows": {
+    "sm": {
+      "ios": {
+        "shadowColor": "#000000",
+        "shadowOffset": { "width": 0, "height": 1 },
+        "shadowOpacity": 0.2,
+        "shadowRadius": 2
+      },
+      "android": {
+        "elevation": 2
+      }
+    },
+    "md": {
+      "ios": {
+        "shadowColor": "#000000",
+        "shadowOffset": { "width": 0, "height": 2 },
+        "shadowOpacity": 0.25,
+        "shadowRadius": 4
+      },
+      "android": {
+        "elevation": 4
+      }
+    },
+    "lg": {
+      "ios": {
+        "shadowColor": "#000000",
+        "shadowOffset": { "width": 0, "height": 4 },
+        "shadowOpacity": 0.3,
+        "shadowRadius": 8
+      },
+      "android": {
+        "elevation": 8
+      }
+    }
+  },
+  "animation": {
+    "duration": {
+      "fast": 150,
+      "normal": 250,
+      "slow": 400
+    },
+    "easing": {
+      "easeIn": "cubic-bezier(0.4, 0, 1, 1)",
+      "easeOut": "cubic-bezier(0, 0, 0.2, 1)",
+      "easeInOut": "cubic-bezier(0.4, 0, 0.2, 1)"
+    }
+  },
+  "icons": {
+    "tabBar": {
+      "home": "house.fill",
+      "exercise": "figure.walk",
+      "wallet": "creditcard.fill",
+      "treasureMap": "map.fill",
+      "profile": "person.fill"
+    },
+    "emoji": {
+      "home": "🏠",
+      "exercise": "🏃",
+      "wallet": "💰",
+      "treasureMap": "🗺️",
+      "profile": "👤",
+      "send": "📤",
+      "receive": "📥",
+      "achievement": "🏆",
+      "coin": "🪙"
+    }
+  },
+  "components": {
+    "button": {
+      "primary": {
+        "backgroundColor": "#e94560",
+        "textColor": "#ffffff",
+        "borderRadius": 12,
+        "paddingVertical": 16,
+        "paddingHorizontal": 24
+      },
+      "secondary": {
+        "backgroundColor": "transparent",
+        "textColor": "#e94560",
+        "borderColor": "#e94560",
+        "borderWidth": 1,
+        "borderRadius": 12,
+        "paddingVertical": 16,
+        "paddingHorizontal": 24
+      },
+      "disabled": {
+        "backgroundColor": "#252547",
+        "textColor": "#606070"
+      }
+    },
+    "card": {
+      "backgroundColor": "#1a1a2e",
+      "borderRadius": 16,
+      "padding": 16
+    },
+    "input": {
+      "backgroundColor": "#252547",
+      "textColor": "#ffffff",
+      "placeholderColor": "#606070",
+      "borderRadius": 12,
+      "paddingVertical": 16,
+      "paddingHorizontal": 16,
+      "focusBorderColor": "#e94560"
+    },
+    "tabBar": {
+      "backgroundColor": "#16213e",
+      "activeColor": "#e94560",
+      "inactiveColor": "#606070",
+      "height": 80
+    }
+  },
+  "tokenomics": {
+    "symbol": "EXC",
+    "name": "ExerciseCoin",
+    "decimals": 2,
+    "coinsPerMiningMinute": 5.13,
+    "exerciseMiningRatio": 0.5
+  }
+}

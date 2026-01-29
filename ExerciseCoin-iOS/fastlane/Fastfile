@@ -1,0 +1,82 @@
+default_platform(:ios)
+
+platform :ios do
+  desc "Run SwiftLint"
+  lane :lint do
+    swiftlint(
+      mode: :lint,
+      config_file: ".swiftlint.yml",
+      strict: true,
+      raise_if_swiftlint_error: true
+    )
+  end
+
+  desc "Run unit tests"
+  lane :test do
+    run_tests(
+      project: "ExerciseCoin.xcodeproj",
+      scheme: "ExerciseCoin",
+      device: "iPhone 15",
+      clean: true,
+      code_coverage: true
+    )
+  end
+
+  desc "Build debug version"
+  lane :build_debug do
+    build_app(
+      project: "ExerciseCoin.xcodeproj",
+      scheme: "ExerciseCoin",
+      configuration: "Debug",
+      export_method: "development",
+      skip_codesigning: true
+    )
+  end
+
+  desc "Build release version for App Store"
+  lane :build_release do
+    setup_ci if ENV['CI']
+
+    match(
+      type: "appstore",
+      readonly: is_ci,
+      app_identifier: "com.exercisecoin.app"
+    )
+
+    increment_build_number(
+      build_number: ENV["CI_PIPELINE_IID"] || latest_testflight_build_number + 1
+    )
+
+    build_app(
+      project: "ExerciseCoin.xcodeproj",
+      scheme: "ExerciseCoin",
+      configuration: "Release",
+      export_method: "app-store",
+      output_directory: "./build",
+      output_name: "ExerciseCoin.ipa"
+    )
+  end
+
+  desc "Deploy to TestFlight"
+  lane :deploy_testflight do
+    build_release
+
+    upload_to_testflight(
+      skip_waiting_for_build_processing: true,
+      api_key_path: "fastlane/api_key.json"
+    )
+  end
+
+  desc "Deploy to App Store"
+  lane :deploy_appstore do
+    build_release
+
+    upload_to_app_store(
+      skip_screenshots: true,
+      skip_metadata: false,
+      submit_for_review: false,
+      automatic_release: false,
+      api_key_path: "fastlane/api_key.json"
+    )
+  end
+end

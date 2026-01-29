@@ -2,6 +2,7 @@ stages:
   - lint
   - test
   - build
+  - deploy
 
 variables:
   NODE_VERSION: "20"
@@ -24,7 +25,9 @@ default:
     - cd admin-portal && npm ci && cd ..
     - cd exchange && npm ci && cd ..
 
+# =============================================================================
 # Server jobs
+# =============================================================================
 server:lint:
   extends: .install_deps
   stage: lint
@@ -39,7 +42,9 @@ server:test:
     - cd server && npm test
   allow_failure: true
 
+# =============================================================================
 # Admin Portal jobs
+# =============================================================================
 admin-portal:build:
   extends: .install_deps
   stage: build
@@ -50,7 +55,9 @@ admin-portal:build:
       - admin-portal/dist/
     expire_in: 1 week
 
+# =============================================================================
 # Exchange jobs
+# =============================================================================
 exchange:build:
   extends: .install_deps
   stage: build
@@ -61,13 +68,19 @@ exchange:build:
       - exchange/dist/
     expire_in: 1 week
 
-# Mobile App jobs
+# =============================================================================
+# React Native Mobile App (Deprecated - use native apps instead)
+# =============================================================================
 mobile-app:lint:
   extends: .install_deps
   stage: lint
   script:
     - cd mobile-app && npm run lint
   allow_failure: true
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+      when: manual
+    - when: never
 
 mobile-app:test:
   extends: .install_deps
@@ -75,35 +88,221 @@ mobile-app:test:
   script:
     - cd mobile-app && npm test
   allow_failure: true
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+      when: manual
+    - when: never
 
-# Mobile App Native Builds
-.mobile_build_base:
-  stage: build
+# =============================================================================
+# iOS Native App (Swift/SwiftUI)
+# =============================================================================
+# Required CI Variables:
+#   - MATCH_PASSWORD: Certificate encryption password
+#   - ASC_KEY_ID: App Store Connect API Key ID
+#   - ASC_ISSUER_ID: App Store Connect API Issuer ID
+#   - ASC_KEY_CONTENT: App Store Connect API Key content (base64)
+#   - MATCH_GIT_URL: Git URL for match certificates repo
+#   - APPLE_ID: Apple Developer account email
+#   - TEAM_ID: Apple Developer Team ID
+
+.ios_base:
+  tags:
+    - macos
+  cache:
+    key: ios-${CI_COMMIT_REF_SLUG}
+    paths:
+      - ExerciseCoin-iOS/DerivedData/
+    policy: pull-push
   before_script:
-    - npm ci
-    - npm install -g eas-cli
-    - cd mobile-app
+    - cd ExerciseCoin-iOS
+    - gem install bundler
+    - bundle install
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+    - if: $CI_COMMIT_TAG
+    - changes:
+        - ExerciseCoin-iOS/**/*
+
+ios:lint:
+  extends: .ios_base
+  stage: lint
+  script:
+    - bundle exec fastlane lint
+  allow_failure: true
+
+ios:test:
+  extends: .ios_base
+  stage: test
+  script:
+    - bundle exec fastlane test
+  artifacts:
+    reports:
+      junit: ExerciseCoin-iOS/fastlane/test_output/report.junit
+    when: always
+
+ios:build:debug:
+  extends: .ios_base
+  stage: build
+  script:
+    - bundle exec fastlane build_debug
+  artifacts:
+    paths:
+      - ExerciseCoin-iOS/build/ExerciseCoin.app
+    expire_in: 3 days
+  rules:
+    - if: $CI_COMMIT_BRANCH != $CI_DEFAULT_BRANCH
+    - when: manual
+
+ios:build:release:
+  extends: .ios_base
+  stage: build
+  script:
+    - echo "$ASC_KEY_CONTENT" | base64 -d > fastlane/api_key.json
+    - bundle exec fastlane build_release
+  artifacts:
+    paths:
+      - ExerciseCoin-iOS/build/ExerciseCoin.ipa
+    expire_in: 1 week
   rules:
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
     - if: $CI_COMMIT_TAG
 
-mobile-app:ios:
-  extends: .mobile_build_base
-  tags:
-    - macos
+ios:deploy:testflight:
+  extends: .ios_base
+  stage: deploy
   script:
-    - eas build --platform ios --profile production --non-interactive
-  artifacts:
-    paths:
-      - mobile-app/build/*.ipa
-    expire_in: 1 week
+    - echo "$ASC_KEY_CONTENT" | base64 -d > fastlane/api_key.json
+    - bundle exec fastlane deploy_testflight
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+      when: manual
+    - if: $CI_COMMIT_TAG
+      when: manual
+  environment:
+    name: ios-testflight
+    url: https://appstoreconnect.apple.com
 
-mobile-app:android:
-  extends: .mobile_build_base
+ios:deploy:appstore:
+  extends: .ios_base
+  stage: deploy
   script:
-    - eas build --platform android --profile production --non-interactive
+    - echo "$ASC_KEY_CONTENT" | base64 -d > fastlane/api_key.json
+    - bundle exec fastlane deploy_appstore
+  rules:
+    - if: $CI_COMMIT_TAG
+      when: manual
+  environment:
+    name: ios-production
+    url: https://apps.apple.com
+
+# =============================================================================
+# Android Native App (Kotlin/Jetpack Compose)
+# =============================================================================
+# Required CI Variables:
+#   - ANDROID_KEYSTORE_BASE64: Signing keystore (base64 encoded)
+#   - KEYSTORE_PASSWORD: Keystore password
+#   - KEY_ALIAS: Key alias in keystore
+#   - KEY_PASSWORD: Key password
+#   - PLAY_STORE_JSON_KEY: Play Store service account JSON (base64)
+#   - MAPS_API_KEY: Google Maps API key
+
+.android_base:
+  image: cimg/android:2024.01
+  cache:
+    key: android-${CI_COMMIT_REF_SLUG}
+    paths:
+      - ExerciseCoin-Android/.gradle/
+      - ExerciseCoin-Android/build/
+      - ExerciseCoin-Android/app/build/
+    policy: pull-push
+  before_script:
+    - cd ExerciseCoin-Android
+    - chmod +x ./gradlew
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+    - if: $CI_COMMIT_TAG
+    - changes:
+        - ExerciseCoin-Android/**/*
+
+android:lint:
+  extends: .android_base
+  stage: lint
+  script:
+    - ./gradlew ktlintCheck detekt --no-daemon
+  allow_failure: true
+
+android:test:
+  extends: .android_base
+  stage: test
+  script:
+    - ./gradlew testDebugUnitTest --no-daemon
+  artifacts:
+    reports:
+      junit: ExerciseCoin-Android/app/build/test-results/testDebugUnitTest/*.xml
+    when: always
+
+android:build:debug:
+  extends: .android_base
+  stage: build
+  script:
+    - ./gradlew assembleDebug --no-daemon
   artifacts:
     paths:
-      - mobile-app/build/*.apk
-      - mobile-app/build/*.aab
+      - ExerciseCoin-Android/app/build/outputs/apk/debug/app-debug.apk
+    expire_in: 3 days
+  rules:
+    - if: $CI_COMMIT_BRANCH != $CI_DEFAULT_BRANCH
+    - when: manual
+
+android:build:release:
+  extends: .android_base
+  stage: build
+  script:
+    - echo "$ANDROID_KEYSTORE_BASE64" | base64 -d > app/release.keystore
+    - |
+      ./gradlew bundleRelease --no-daemon \
+        -Pandroid.injected.signing.store.file=release.keystore \
+        -Pandroid.injected.signing.store.password="$KEYSTORE_PASSWORD" \
+        -Pandroid.injected.signing.key.alias="$KEY_ALIAS" \
+        -Pandroid.injected.signing.key.password="$KEY_PASSWORD"
+  artifacts:
+    paths:
+      - ExerciseCoin-Android/app/build/outputs/bundle/release/app-release.aab
     expire_in: 1 week
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+    - if: $CI_COMMIT_TAG
+
+android:deploy:internal:
+  extends: .android_base
+  stage: deploy
+  script:
+    - echo "$ANDROID_KEYSTORE_BASE64" | base64 -d > app/release.keystore
+    - echo "$PLAY_STORE_JSON_KEY" | base64 -d > play_store_key.json
+    - gem install bundler
+    - bundle install
+    - bundle exec fastlane deploy_internal
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+      when: manual
+    - if: $CI_COMMIT_TAG
+      when: manual
+  environment:
+    name: android-internal
+    url: https://play.google.com/console
+
+android:deploy:production:
+  extends: .android_base
+  stage: deploy
+  script:
+    - echo "$ANDROID_KEYSTORE_BASE64" | base64 -d > app/release.keystore
+    - echo "$PLAY_STORE_JSON_KEY" | base64 -d > play_store_key.json
+    - gem install bundler
+    - bundle install
+    - bundle exec fastlane deploy_production
+  rules:
+    - if: $CI_COMMIT_TAG
+      when: manual
+  environment:
+    name: android-production
+    url: https://play.google.com/store/apps/details?id=com.exercisecoin.app
