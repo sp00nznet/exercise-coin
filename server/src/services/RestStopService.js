@@ -366,20 +366,15 @@ class RestStopService {
   /**
    * Find nearby friends who are also resting (for discovery feature)
    */
-  static async findNearbyRestingFriends(userId, location, radiusMeters = 100) {
-    try {
-      // Get users with active sessions who are currently stopped
-      // This would integrate with real-time location sharing in a production app
+  static async findNearbyRestingFriends(_userId, _location, _radiusMeters = 100) {
+    // Get users with active sessions who are currently stopped
+    // This would integrate with real-time location sharing in a production app
 
-      // For now, return empty - this would be implemented with real-time location
-      return {
-        success: true,
-        nearbyFriends: []
-      };
-    } catch (error) {
-      logger.error('Error finding nearby friends:', error);
-      return { success: false, nearbyFriends: [] };
-    }
+    // For now, return empty - this would be implemented with real-time location
+    return {
+      success: true,
+      nearbyFriends: []
+    };
   }
 
   /**

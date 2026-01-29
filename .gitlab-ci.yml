@@ -112,10 +112,14 @@ mobile-app:test:
     key: ios-${CI_COMMIT_REF_SLUG}
     paths:
       - ExerciseCoin-iOS/DerivedData/
+      - ExerciseCoin-iOS/vendor/bundle/
     policy: pull-push
   before_script:
     - cd ExerciseCoin-iOS
-    - gem install bundler
+    - export GEM_HOME="$HOME/.gem"
+    - export PATH="$GEM_HOME/bin:$PATH"
+    - gem install bundler --user-install
+    - bundle config set --local path vendor/bundle
     - bundle install
   rules:
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
@@ -207,30 +211,37 @@ ios:deploy:appstore:
 #   - MAPS_API_KEY: Google Maps API key
 
 .android_base:
-  image: gradle:8.4-jdk17
+  tags:
+    - android
   variables:
-    ANDROID_HOME: "/opt/android-sdk"
-    ANDROID_SDK_ROOT: "/opt/android-sdk"
+    ANDROID_HOME: "${HOME}/android-sdk"
+    ANDROID_SDK_ROOT: "${HOME}/android-sdk"
   cache:
     key: android-${CI_COMMIT_REF_SLUG}
     paths:
       - ExerciseCoin-Android/.gradle/
       - ExerciseCoin-Android/build/
       - ExerciseCoin-Android/app/build/
-      - /opt/android-sdk/
     policy: pull-push
   before_script:
     - |
-      # Install Android SDK if not cached
-      if [ ! -d "$ANDROID_HOME/platforms" ]; then
-        apt-get update && apt-get install -y wget unzip
+      # Install Android SDK if not present
+      if [ ! -d "$ANDROID_HOME/cmdline-tools" ]; then
         mkdir -p $ANDROID_HOME/cmdline-tools
-        wget -q https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip -O /tmp/cmdline-tools.zip
+        curl -sL https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip -o /tmp/cmdline-tools.zip
         unzip -q /tmp/cmdline-tools.zip -d $ANDROID_HOME/cmdline-tools
         mv $ANDROID_HOME/cmdline-tools/cmdline-tools $ANDROID_HOME/cmdline-tools/latest
         yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses > /dev/null 2>&1 || true
         $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager "platforms;android-34" "build-tools;34.0.0" "platform-tools"
       fi
+    - |
+      # Install Gradle if not present
+      if ! command -v gradle &> /dev/null; then
+        curl -sL https://services.gradle.org/distributions/gradle-8.4-bin.zip -o /tmp/gradle.zip
+        unzip -q /tmp/gradle.zip -d $HOME
+        export PATH="$HOME/gradle-8.4/bin:$PATH"
+      fi
+    - export PATH="$HOME/gradle-8.4/bin:$ANDROID_HOME/cmdline-tools/latest/bin:$ANDROID_HOME/platform-tools:$PATH"
     - cd ExerciseCoin-Android
   rules:
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
@@ -242,14 +253,16 @@ android:lint:
   extends: .android_base
   stage: lint
   script:
-    - gradle ktlintCheck detekt --no-daemon
+    - chmod +x ./gradlew
+    - ./gradlew ktlintCheck detekt --no-daemon
   allow_failure: true
 
 android:test:
   extends: .android_base
   stage: test
   script:
-    - gradle testDebugUnitTest --no-daemon
+    - chmod +x ./gradlew
+    - ./gradlew testDebugUnitTest --no-daemon
   artifacts:
     reports:
       junit: ExerciseCoin-Android/app/build/test-results/testDebugUnitTest/*.xml
@@ -259,7 +272,8 @@ android:build:debug:
   extends: .android_base
   stage: build
   script:
-    - gradle assembleDebug --no-daemon
+    - chmod +x ./gradlew
+    - ./gradlew assembleDebug --no-daemon
   artifacts:
     paths:
       - ExerciseCoin-Android/app/build/outputs/apk/debug/app-debug.apk
@@ -272,9 +286,10 @@ android:build:release:
   extends: .android_base
   stage: build
   script:
+    - chmod +x ./gradlew
     - echo "$ANDROID_KEYSTORE_BASE64" | base64 -d > app/release.keystore
     - |
-      gradle bundleRelease --no-daemon \
+      ./gradlew bundleRelease --no-daemon \
         -Pandroid.injected.signing.store.file=release.keystore \
         -Pandroid.injected.signing.store.password="$KEYSTORE_PASSWORD" \
         -Pandroid.injected.signing.key.alias="$KEY_ALIAS" \
