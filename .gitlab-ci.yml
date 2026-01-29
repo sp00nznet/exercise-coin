@@ -131,7 +131,6 @@ ios:build:debug:
       - ExerciseCoin-iOS/build/ExerciseCoin.app
     expire_in: 3 days
   rules:
-    - if: $CI_COMMIT_BRANCH != $CI_DEFAULT_BRANCH
     - when: manual
 
 ios:build:release:
@@ -146,8 +145,7 @@ ios:build:release:
       - ExerciseCoin-iOS/build/ExerciseCoin.ipa
     expire_in: 1 week
   rules:
-    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
-    - if: $CI_COMMIT_TAG
+    - when: manual
 
 ios:deploy:testflight:
   extends: .ios_base
