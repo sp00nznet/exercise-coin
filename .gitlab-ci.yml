@@ -274,8 +274,8 @@ android:build:release:
       - ExerciseCoin-Android/app/build/outputs/bundle/release/app-release.aab
     expire_in: 1 week
   rules:
-    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
-    - if: $CI_COMMIT_TAG
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH && $ANDROID_KEYSTORE_BASE64
+    - if: $CI_COMMIT_TAG && $ANDROID_KEYSTORE_BASE64
 
 android:deploy:internal:
   extends: .android_base
