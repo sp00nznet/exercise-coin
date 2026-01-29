@@ -58,7 +58,7 @@ fun AchievementsScreen(
                                 Text("${state.unlockedCount} / ${state.achievements.size}", style = MaterialTheme.typography.headlineMedium, color = AppColors.TextPrimary)
                             }
                             CircularProgressIndicator(
-                                progress = { if (state.achievements.isNotEmpty()) state.unlockedCount.toFloat() / state.achievements.size else 0f },
+                                progress = if (state.achievements.isNotEmpty()) state.unlockedCount.toFloat() / state.achievements.size else 0f,
                                 modifier = Modifier.size(60.dp),
                                 color = AppColors.Accent,
                                 trackColor = AppColors.SurfaceVariant
@@ -97,7 +97,7 @@ private fun AchievementCard(achievement: Achievement) {
                 if (!achievement.isUnlocked) {
                     Spacer(Modifier.height(4.dp))
                     LinearProgressIndicator(
-                        progress = { achievement.progressPercentage.toFloat() },
+                        progress = achievement.progressPercentage.toFloat(),
                         modifier = Modifier.fillMaxWidth().height(4.dp),
                         color = AppColors.Accent,
                         trackColor = AppColors.SurfaceVariant
