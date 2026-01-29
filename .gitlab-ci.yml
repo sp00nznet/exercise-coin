@@ -211,6 +211,8 @@ ios:deploy:appstore:
 #   - MAPS_API_KEY: Google Maps API key
 
 .android_base:
+  tags:
+    - linux
   variables:
     ANDROID_HOME: "/tmp/android-sdk"
     ANDROID_SDK_ROOT: "/tmp/android-sdk"
