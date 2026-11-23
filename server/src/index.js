@@ -15,6 +15,7 @@ const transferRoutes = require('./routes/transfer');
 const adminRoutes = require('./routes/admin');
 const restStopRoutes = require('./routes/restStop');
 const exchangeRoutes = require('./routes/exchange');
+const pedometerRoutes = require('./routes/pedometer');
 const { errorHandler } = require('./middleware/errorHandler');
 const logger = require('./utils/logger');
 const { AchievementService, RandomDropDaemon, FriendlinessDaemon, TreasureService, TransferService } = require('./services');
@@ -45,6 +46,7 @@ app.use('/api/transfer', transferRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/rest-stop', restStopRoutes);
 app.use('/api/exchange', exchangeRoutes);
+app.use('/api/pedometer', pedometerRoutes);
 
 // Health check
 app.get('/health', (req, res) => {
@@ -77,9 +79,11 @@ mongoose.connect(MONGODB_URI)
       await TransferService.cleanupExpiredTransfers();
     }, 60 * 60 * 1000);
 
-    app.listen(PORT, () => {
-      logger.info(`Exercise Coin server running on port ${PORT}`);
-    });
+    // HOST unset = all interfaces (so a 3DS / emulator on the LAN can reach it).
+    const HOST = process.env.HOST;
+    const onListen = () => logger.info(`Exercise Coin server running on ${HOST || '*'}:${PORT}`);
+    if (HOST) app.listen(PORT, HOST, onListen);
+    else app.listen(PORT, onListen);
   })
   .catch((err) => {
     logger.error('MongoDB connection error:', err);

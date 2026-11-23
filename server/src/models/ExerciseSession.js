@@ -12,6 +12,9 @@ const stepDataPointSchema = new mongoose.Schema({
   stepsPerSecond: {
     type: Number,
     required: true
+  },
+  accelVariance: {        // optional; sent by the 3DS client
+    type: Number
   }
 }, { _id: false });
 
@@ -25,6 +28,13 @@ const exerciseSessionSchema = new mongoose.Schema({
   startTime: {
     type: Date,
     required: true
+  },
+  source: {               // '3ds' | 'ios' | 'android' | ...
+    type: String,
+    default: 'unknown'
+  },
+  consoleHash: {
+    type: String
   },
   endTime: {
     type: Date

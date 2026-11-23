@@ -8,7 +8,7 @@ const { validate, schemas } = require('../middleware/validation');
 router.use(authenticate);
 
 // Session management
-router.post('/session/start', exerciseController.startSession);
+router.post('/session/start', validate(schemas.startSession, { assign: true }), exerciseController.startSession);
 router.post('/session/steps', validate(schemas.recordSteps), exerciseController.recordSteps);
 router.post('/session/end', validate(schemas.endSession), exerciseController.endSession);
 

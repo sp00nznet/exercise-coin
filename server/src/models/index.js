@@ -11,6 +11,8 @@ const FriendlyTransfer = require('./FriendlyTransfer');
 const RestStopBonus = require('./RestStopBonus');
 const ExchangeWallet = require('./ExchangeWallet');
 const ExchangeOrder = require('./ExchangeOrder');
+const PedometerHour = require('./PedometerHour');
+const PedometerConsole = require('./PedometerConsole');
 
 module.exports = {
   User,
@@ -25,5 +27,7 @@ module.exports = {
   FriendlyTransfer,
   RestStopBonus,
   ExchangeWallet,
-  ExchangeOrder
+  ExchangeOrder,
+  PedometerHour,
+  PedometerConsole
 };
