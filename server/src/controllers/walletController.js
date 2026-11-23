@@ -165,7 +165,7 @@ exports.getEarningsHistory = async (req, res, next) => {
       {
         $match: {
           userId: new mongoose.Types.ObjectId(userId),
-          type: 'mining_reward',
+          type: { $in: ['mining_reward', 'pedometer_reward'] },
           createdAt: { $gte: startDate }
         }
       },

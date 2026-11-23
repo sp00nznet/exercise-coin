@@ -13,7 +13,7 @@ const transactionSchema = new mongoose.Schema({
   },
   type: {
     type: String,
-    enum: ['mining_reward', 'transfer_in', 'transfer_out', 'withdrawal'],
+    enum: ['mining_reward', 'pedometer_reward', 'transfer_in', 'transfer_out', 'withdrawal'],
     required: true
   },
   amount: {

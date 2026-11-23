@@ -18,7 +18,11 @@ class CoinDaemonService {
   }
 
   async allocatePort() {
-    let port = this.basePort + 1;
+    // The in-memory pool is empty after a restart, so start above the highest
+    // port already stored on a user (daemonPort is unique; reusing one made
+    // registration fail with a duplicate key after any restart).
+    const top = await User.findOne({ daemonPort: { $ne: null } }).sort({ daemonPort: -1 }).select('daemonPort').lean();
+    let port = Math.max(this.basePort, top ? top.daemonPort : 0) + 1;
     while (this.portPool.has(port)) {
       port++;
     }
@@ -171,7 +175,7 @@ class CoinDaemonService {
   async getWalletBalance(userId) {
     try {
       const user = await User.findById(userId);
-      if (!user || !user.walletAddress) {
+      if (!user) {
         return { balance: 0, pending: 0 };
       }
 

@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const RestStopService = require('../services/RestStopService');
-const { authenticateToken } = require('../middleware/auth');
+const { authenticate } = require('../middleware/auth');
 
 /**
  * 🍔 Rest Stop Bonus Routes
@@ -11,7 +11,8 @@ const { authenticateToken } = require('../middleware/auth');
  */
 
 // All routes require authentication
-router.use(authenticateToken);
+// (auth middleware exports `authenticate`, which sets req.userId; these handlers use req.user.id)
+router.use(authenticate, (req, res, next) => { req.user = { id: req.userId }; next(); });
 
 /**
  * Check if user is eligible for a rest stop bonus

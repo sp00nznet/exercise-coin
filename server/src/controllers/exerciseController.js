@@ -4,6 +4,7 @@ const User = require('../models/User');
 const ExerciseDetectionService = require('../services/ExerciseDetectionService');
 const CoinDaemonService = require('../services/CoinDaemonService');
 const AchievementService = require('../services/AchievementService');
+const PedometerService = require('../services/PedometerService');
 const logger = require('../utils/logger');
 
 exports.startSession = async (req, res, next) => {
@@ -24,9 +25,13 @@ exports.startSession = async (req, res, next) => {
     }
 
     // Create new session
+    const { source, consoleHash } = req.body || {};
+
     const session = new ExerciseSession({
       userId,
       startTime: new Date(),
+      source: source || 'unknown',
+      consoleHash,
       status: 'active',
       stepData: []
     });
@@ -70,7 +75,8 @@ exports.recordSteps = async (req, res, next) => {
     const formattedStepData = stepData.map(d => ({
       timestamp: new Date(d.timestamp),
       stepCount: d.stepCount,
-      stepsPerSecond: d.stepsPerSecond
+      stepsPerSecond: d.stepsPerSecond,
+      ...(typeof d.accelVariance === 'number' ? { accelVariance: d.accelVariance } : {})
     }));
 
     session.stepData.push(...formattedStepData);
@@ -113,6 +119,15 @@ exports.endSession = async (req, res, next) => {
     // Analyze exercise session
     const analysis = ExerciseDetectionService.analyzeExerciseSession(session.stepData);
 
+    // 3DS: a console lying still while reporting a step rate is not exercise.
+    if (session.source === '3ds' && analysis.isValid && PedometerService.isNoMotion(session.stepData)) {
+      analysis.isValid = false;
+      analysis.reason = 'no motion';
+      analysis.miningSeconds = 0;
+    }
+
+    let capped = false;
+
     session.isValidExercise = analysis.isValid;
     session.validExerciseSeconds = analysis.validSeconds;
     session.invalidReason = analysis.reason;
@@ -128,39 +143,58 @@ exports.endSession = async (req, res, next) => {
         const miningResult = await CoinDaemonService.startMining(userId, analysis.miningSeconds);
 
         session.miningTriggered = true;
-        session.coinsEarned = miningResult.coinsEarned;
 
-        if (miningResult.coinsEarned > 0) {
-          session.status = 'rewarded';
+        // Daily cap across all earning (live sessions + pedometer). Under the user's
+        // reward lock so a concurrent pedometer sync can't push past it.
+        await PedometerService.withUserLock(userId, async () => {
+          const cfg = PedometerService.getConfig();
+          const used = await PedometerService.coinsUsedToday(userId, Date.now(), cfg);
+          const trimmed = PedometerService.trimCoins(miningResult.coinsEarned, used, cfg.dailyExcCap);
+          capped = trimmed.capped;
+          session.coinsEarned = trimmed.coins;
 
-          // Create transaction record
-          const transaction = new Transaction({
-            userId,
-            exerciseSessionId: session._id,
-            type: 'mining_reward',
-            amount: miningResult.coinsEarned,
-            status: 'confirmed',
-            miningDurationSeconds: analysis.miningSeconds,
-            confirmedAt: new Date(),
-            metadata: {
-              blocksFound: miningResult.blocksFound,
-              validExerciseSeconds: analysis.validSeconds
-            }
-          });
-          await transaction.save();
-          session.transactionId = transaction._id;
+          if (session.coinsEarned > 0) {
+            session.status = 'rewarded';
 
-          // Update user stats
-          await User.findByIdAndUpdate(userId, {
-            $inc: {
-              totalCoinsEarned: miningResult.coinsEarned,
-              totalExerciseSeconds: analysis.validSeconds,
-              totalSteps: session.totalSteps,
-              totalMiningSeconds: analysis.miningSeconds
-            },
-            lastActiveAt: new Date()
-          });
-        }
+            // Create transaction record
+            const transaction = new Transaction({
+              userId,
+              exerciseSessionId: session._id,
+              type: 'mining_reward',
+              amount: session.coinsEarned,
+              status: 'confirmed',
+              miningDurationSeconds: analysis.miningSeconds,
+              confirmedAt: new Date(),
+              metadata: {
+                blocksFound: miningResult.blocksFound,
+                validExerciseSeconds: analysis.validSeconds,
+                ...(capped ? { minedCoins: miningResult.coinsEarned, capped: true } : {})
+              }
+            });
+            await transaction.save();
+            session.transactionId = transaction._id;
+
+            // Update user stats
+            await User.findByIdAndUpdate(userId, {
+              $inc: {
+                totalCoinsEarned: session.coinsEarned,
+                totalExerciseSeconds: analysis.validSeconds,
+                totalSteps: session.totalSteps,
+                totalMiningSeconds: analysis.miningSeconds
+              },
+              lastActiveAt: new Date()
+            });
+          } else {
+            // Capped to zero: still count the exercise.
+            await User.findByIdAndUpdate(userId, {
+              $inc: {
+                totalExerciseSeconds: analysis.validSeconds,
+                totalSteps: session.totalSteps
+              },
+              lastActiveAt: new Date()
+            });
+          }
+        });
       } catch (miningError) {
         logger.error(`Mining failed for session ${sessionId}:`, miningError);
         session.miningTriggered = false;
@@ -197,8 +231,10 @@ exports.endSession = async (req, res, next) => {
         invalidReason: session.invalidReason,
         miningTriggered: session.miningTriggered,
         miningDurationSeconds: session.miningDurationSeconds,
-        coinsEarned: session.coinsEarned
+        coinsEarned: session.coinsEarned,
+        source: session.source
       },
+      capped,
       newAchievements: achievementResult.newAchievements
     });
 

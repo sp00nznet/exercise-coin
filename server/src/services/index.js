@@ -6,6 +6,7 @@ const TransferService = require('./TransferService');
 const RandomDropDaemon = require('./RandomDropDaemon');
 const FriendlinessDaemon = require('./FriendlinessDaemon');
 const RestStopService = require('./RestStopService');
+const PedometerService = require('./PedometerService');
 
 module.exports = {
   ExerciseDetectionService,
@@ -15,5 +16,6 @@ module.exports = {
   TransferService,
   RandomDropDaemon,
   FriendlinessDaemon,
-  RestStopService
+  RestStopService,
+  PedometerService
 };
